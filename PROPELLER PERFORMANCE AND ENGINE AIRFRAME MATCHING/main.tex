@@ -1,0 +1,591 @@
+\documentclass[a4paper,12pt]{article} % Document class.
+\usepackage[margin=1.0in]{geometry} % Set margin sizes here.
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % For figures.
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{fancyhdr} % For custom page headers and footers.
+\usepackage{graphics} % For figures.
+\usepackage{enumitem}
+\usepackage[margin=0.5cm]{caption}
+\usepackage{hyperref}
+\usepackage{adjustbox}
+\usepackage{pgfplots}
+\usepackage{xcolor}
+
+
+\lstset{
+    language=Matlab,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+%\usepackage{tikz}
+\hypersetup{
+  colorlinks = true,
+  linkcolor = black,
+  anchorcolor = red,
+  citecolor = black,
+  urlcolor = blue
+}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=10cm]{figures/USYDLogo.png}
+	\end{figure}
+	\vspace{1.5cm}
+	\rule{\linewidth}{0.3 mm} \\[0.5 cm]
+	\textbf{\Huge \centering AERO3261}\\
+        \vspace{0.4cm}
+        \textbf{\Huge \centering Assignment 1}\\
+        \vspace{0.4cm}
+        \textbf{\centering PROPELLER PERFORMANCE AND ENGINE/AIRFRAME MATCHING }\\
+	    \vspace{0.4cm}
+	    \textbf{\large \centering Harry Lieshout : 530619370\\%insert names and SID here
+            }
+	\rule{\linewidth}{0.3 mm} \\[0.5 cm]
+	\vspace{0.2cm}
+	\vspace*{\fill}	
+\end{titlepage}
+% Configure page headers and footers using fancyhdr.
+\pagestyle{fancy}
+\fancyhf{} % Clear all default header/footer fields.
+\fancyhead[L]{\small AERO3261 Assignment 1} % Left header: document title.
+\fancyhead[R]{\small SID: 530619370}      % Right header: student ID.
+\fancyfoot[C]{\thepage}                   % Centred footer: page number.
+\renewcommand{\headrulewidth}{0.4pt}      % Thin rule below the header.
+
+\pagenumbering{roman}
+
+\begin{abstract}
+This report investigates the performance of an APC20x8 propeller using Blade Element Momentum (BEM) theory and its integration with a given engine and airframe. Aerodynamic data for the NACA4412 airfoil were obtained using XFOIL and incorporated into a MATLAB-based BEM model to evaluate thrust, power, and efficiency across a range of operating conditions. The propeller was then matched with the engine to determine operating points and assess aircraft performance in terms of maximum speed and rate of climb. The effects of propeller pitch variation and engine power scaling were analysed, highlighting key trade-offs between cruise and climb performance. The results demonstrate that aircraft performance is governed by the interaction between aerodynamic loading, advance ratio, and available power, providing insight into optimal propulsion system selection.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+\newpage
+
+\pagenumbering{arabic}
+
+\section{Introduction}
+\subsection{Background}
+Propeller-driven propulsion systems are widely used in small unmanned aerial vehicles (UAVs) due to their simplicity, efficiency, and reliability at low to moderate flight speeds. The performance of such systems is strongly dependent on the interaction between the propeller, engine, and airframe. Understanding this interaction is essential for optimising aircraft performance, particularly in terms of cruise speed and climb capability.
+
+Blade Element Momentum (BEM) theory provides a practical framework for predicting propeller performance by combining aerodynamic blade element analysis with momentum theory. When coupled with engine characteristics and airframe drag models, it enables a complete assessment of propulsion system performance.
+
+\section{Propeller Geometry}
+\subsection{Selected Propeller - APC20x8}
+\begin{table}[H]
+\centering
+\caption{Propeller Geometry Distribution (APC20x8)}
+\begin{tabular}{ccc}
+\toprule
+$r/R$ & Pitch (rad) & Chord (m) \\
+\midrule
+0.1 & 0.5923 & 0.0280 \\
+0.2 & 0.5862 & 0.0343 \\
+0.3 & 0.4534 & 0.0405 \\
+0.4 & 0.3284 & 0.0420 \\
+0.5 & 0.2500 & 0.0410 \\
+0.6 & 0.2224 & 0.0374 \\
+0.7 & 0.2047 & 0.0319 \\
+0.8 & 0.2041 & 0.0257 \\
+0.9 & 0.2026 & 0.0192 \\
+1.0 & 0.2010 & 0.0124 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{Pitch and Chord Distribution}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Pitch_Distribution.png}
+\caption{Variation of pitch along the propeller blade for the APC 20x8 propeller ($r/R$)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Chord_Distribution.png}
+\caption{Variation of chord along the propeller blade for the APC 20x8 propeller ($r/R$)}
+\end{subfigure}
+\caption{Propeller geometric properties along the blade radius for the APC 20x8 propeller}
+\label{fig:geometry}
+\end{figure}
+The geometric properties of the selected APC20x8 propeller are shown in Figure~\ref{fig:geometry}. 
+The pitch angle varies along the blade radius to maintain an appropriate angle of attack for the blade 
+elements as the local tangential velocity increases with radius. Near the root, the pitch angle is 
+higher to compensate for the lower rotational speed, while toward the tip the pitch angle decreases.
+
+The chord distribution also varies along the blade span. The chord is generally larger near the root 
+to provide sufficient structural strength and to generate lift where the blade speed is lower. Toward 
+the tip the chord decreases, reducing drag and minimizing tip losses.
+
+These geometric variations are typical for propeller blades designed using blade element momentum 
+principles, ensuring efficient thrust production across the span of the propeller.
+\section{Airfoil Aerodynamic Data (XFOIL)}
+
+\subsection{Reynolds Numbers Considered}
+
+The aerodynamic characteristics of the blade airfoil were obtained using XFOIL for three Reynolds numbers 
+representative of the operating conditions along the propeller blade. The Reynolds numbers considered were:
+
+\begin{itemize}
+\item $Re = 6.5 \times 10^5$
+\item $Re = 8.0 \times 10^5$
+\item $Re = 1.0 \times 10^6$
+\end{itemize}
+
+These values correspond to the expected range of Reynolds numbers encountered by the blade elements 
+from mid-span to near the tip during propeller operation. Generating aerodynamic data across this 
+range allows the blade element momentum analysis to account for variations in aerodynamic performance 
+due to changes in local flow conditions.
+\subsection{Lift and Drag Characteristics}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Cl_vs_alpha.png}
+\caption{$C_L$ vs angle of attack}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Cd_vs_alpha.png}
+\caption{$C_D$ vs angle of attack}
+\end{subfigure}
+\caption{Airfoil aerodynamic coefficients for different Reynolds numbers}
+\label{fig:xfoil}
+\end{figure}
+
+The aerodynamic performance of the NACA4412 airfoil used in the propeller blades was analysed using 
+XFOIL. Figure~\ref{fig:xfoil} shows the variation of lift coefficient $C_L$ and drag coefficient $C_D$ 
+with angle of attack for the three Reynolds numbers considered.
+
+The lift coefficient increases approximately linearly with angle of attack in the pre-stall region, 
+which is consistent with thin airfoil theory. The stall occurs at angles of attack greater than 
+approximately $12^\circ$ to $14^\circ$, where the lift curve begins to deviate from linear behaviour.
+
+The drag coefficient remains relatively low near zero angle of attack and increases as the angle 
+of attack increases due to the growth of viscous and pressure drag components.
+
+\subsection{Discussion of Reynolds Number Effects}
+
+The Reynolds number has a noticeable effect on the aerodynamic performance of the airfoil. 
+As the Reynolds number increases, the lift curve becomes slightly steeper and the maximum 
+lift coefficient increases. This occurs because higher Reynolds numbers reduce the relative 
+influence of viscous effects, allowing the boundary layer to remain attached over a larger 
+portion of the airfoil surface.
+
+Similarly, the drag coefficient decreases with increasing Reynolds number, particularly 
+at moderate angles of attack. Lower Reynolds numbers result in thicker boundary layers 
+and earlier flow separation, which increases drag.
+
+These trends are important for propeller analysis because different sections of the blade 
+operate at different Reynolds numbers depending on the local velocity and chord length. 
+Accurate aerodynamic data across this range is therefore required for reliable performance 
+prediction using blade element momentum theory.
+
+\section{Blade Element Momentum (BEM) Propeller Analysis}
+
+Blade Element Momentum (BEM) theory combines blade element theory and momentum theory to predict propeller performance. The blade is divided into small radial elements, and the forces on each element are calculated using local flow conditions and airfoil data.
+
+The local inflow velocity at each blade section is determined by the combination of axial and rotational components. The advance ratio is defined as:
+\[
+J = \frac{V}{nD}
+\]
+where $V$ is the flight speed, $n$ is the rotational speed, and $D$ is the propeller diameter.
+
+Using aerodynamic coefficients obtained from XFOIL, the elemental lift and drag forces are resolved into thrust and torque contributions. These are integrated along the blade span to obtain total thrust and torque.
+
+\subsection{MATLAB Implementation}
+The BEM model was implemented in MATLAB using the provided code structure. The propeller geometry was updated using the measured chord and pitch distributions, and aerodynamic coefficients were interpolated from XFOIL data. The analysis was performed over a range of flight speeds for multiple rotational speeds (2000, 5000, and 8000 RPM). At each operating condition, the induced velocity factors were solved iteratively until convergence was achieved. The outputs of the model include thrust, torque, power, and non-dimensional performance coefficients as functions of advance ratio and flight speed.
+
+\subsection{Thrust and Power Performance}
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Thrust_Power_vs_Speed.png}
+\caption{Thrust and power variation with flight speed}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Thrust_Power_vs_J.png}
+\caption{Thrust and power variation with advance ratio $J$}
+\end{subfigure}
+\caption{Propeller thrust and power characteristics for multiple RPM values}
+\label{fig:thrust_power}
+\end{figure}
+
+\subsection{Non-Dimensional Performance Coefficients}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Cq_vs_J.png}
+\caption{Torque coefficient $C_q$ vs advance ratio $J$}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/Efficiency_vs_J.png}
+\caption{Efficiency vs advance ratio $J$}
+\end{subfigure}
+
+\caption{Non-dimensional propeller performance coefficients as a function of advance ratio $J$ for multiple RPM values}
+\label{fig:coefficients}
+\end{figure}
+
+\subsection{Discussion of BEM Results}
+
+The BEM results presented in Figures~\ref{fig:thrustpower} and~\ref{fig:coefficients} 
+demonstrate clear trends in propeller performance as a function of advance ratio $J$. 
+The thrust coefficient $C_T$ decreases consistently with increasing $J$, indicating 
+that as forward velocity increases, the effective angle of attack of the blade elements 
+reduces, leading to lower thrust generation.
+
+The torque coefficient $C_Q$ follows a similar trend, although its reduction with $J$ 
+is less steep than that of $C_T$. This suggests that thrust is more sensitive to changes 
+in inflow conditions than torque. At low advance ratios, the propeller operates in a 
+heavily loaded condition, producing high thrust but with significant induced losses.
+
+The efficiency curves show a distinct peak at an intermediate advance ratio, corresponding 
+to the optimal operating condition. At low $J$, efficiency is low due to excessive induced 
+losses, while at high $J$, efficiency decreases again as the propeller becomes under-loaded 
+and generates insufficient lift. The peak efficiency occurs where the balance between thrust 
+production and power input is maximised.
+
+Increasing RPM increases thrust and power across all advance ratios, effectively scaling 
+the performance curves upward. However, the location of the peak efficiency remains largely 
+unchanged, indicating that RPM primarily affects magnitude rather than the underlying 
+aerodynamic behaviour.
+
+
+\section{Engine--Propeller--Airframe Matching}
+
+\subsection{Aircraft Model}
+\subsection{Cruise and Climb Matching}
+
+The engine–propeller matching was performed by equating the torque produced by the engine with the torque required by the propeller at each flight speed. This determines the operating RPM of the system.
+
+The aircraft performance is governed by the relation:
+\[
+T = D + W \sin \theta
+\]
+where $T$ is thrust, $D$ is drag, $W$ is weight, and $\theta$ is the climb angle.
+
+The maximum flight speed occurs at the point where thrust equals drag. At this condition, there is no excess thrust available for acceleration or climb.
+
+The rate of climb is determined by the excess thrust:
+\[
+RoC = \frac{(T - D)V}{W}
+\]
+This indicates that climb performance depends on both the magnitude of excess thrust and the flight speed.
+
+The results show that increasing throttle increases thrust across all speeds, leading to higher maximum speeds and improved climb performance. The optimal climb speed occurs at a lower velocity than the maximum speed, where the product of excess thrust and velocity is maximised.
+
+\subsection{Flight Conditions}
+
+The analysis was conducted at a representative operating altitude of $h = 1680\ \text{m}$, corresponding to typical mission conditions for the UAV. Atmospheric properties at this altitude were specified as a static pressure of $P = 82{,}750\ \text{Pa}$ and a temperature of $T = 277.23\ \text{K}$.
+
+Assuming ideal gas behaviour, the air density was determined using the relation:
+\[
+\rho = \frac{P}{RT}
+\]
+where $R = 287.05\ \text{J/kg/K}$ is the specific gas constant for air. These atmospheric conditions were used consistently throughout the propeller performance analysis and engine–propeller–airframe matching to ensure realistic estimation of aerodynamic forces and propulsion performance.
+
+\subsection{Cruise and Climb Matching}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/thrust_vs_flightspeed.png}
+\caption{Thrust available and airframe drag vs flight speed}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.50\textwidth}
+\includegraphics[width=\linewidth]{figures/matching_100.png}
+\caption{Engine–propeller thrust matching at 100\% throttle}
+\end{subfigure}
+
+\caption{}
+\label{fig:matching_main}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/rpm_vs_flightspeed.png}
+\caption{Matched RPM vs flight speed}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.50\textwidth}
+\includegraphics[width=\linewidth]{figures/roc_vs_flightspeed.png}
+\caption{Rate of climb vs flight speed}
+\end{subfigure}
+
+\caption{Variation of operating parameters with flight speed at different throttle values}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Baseline Performance Summary}
+\begin{tabular}{cccccc}
+\toprule
+Throttle (\%) & $V_{\max}$ (m/s) & RPM$_{V_{\max}}$ & $RoC_{\max}$ (m/s) & $V_{\text{best climb}}$ (m/s) & RPM$_{RoC_{\max}}$ \\
+\midrule
+40  & 31.36 & 6382 & 1.31 & 19.09 & 4811 \\
+60  & 35.46 & 7204 & 2.25 & 20.00 & 5333 \\
+80  & 38.64 & 7853 & 3.21 & 21.82 & 5868 \\
+100 & 41.36 & 8403 & 4.17 & 23.64 & 6347 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Cruise Operating Point Summary}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{cccccccc}
+\toprule
+Throttle (\%) & RPM & $\eta$ & $\dot{m}_f$ (kg/s) & $P_{\text{eng}}$ (W) & $P_{\text{prop}}$ (W) & SFC (kg/Ns) \\
+\midrule
+40 & 6382 & 0.640 & $4.67\times10^{-5}$ & 432 & 433 & $5.28\times10^{-6}$ \\
+60 & 7204 & 0.637 & $6.19\times10^{-5}$ & 617 & 617 & $5.58\times10^{-6}$ \\
+80 & 7853 & 0.638 & $7.76\times10^{-5}$ & 799 & 802 & $5.86\times10^{-6}$ \\
+100 & 8403 & 0.637 & $9.22\times10^{-5}$ & 977 & 979 & $6.12\times10^{-6}$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Climb Operating Point Summary}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{ccccccccc}
+\toprule
+Throttle (\%) & RPM & $\eta$ & $\dot{m}_f$ (kg/s) & $P_{\text{eng}}$ (W) & $P_{\text{prop}}$ (W) & SFC (kg/Ns) \\
+\midrule
+40  & 4811 & 0.786 & $3.57\times10^{-5}$ & 353 & 354 & $2.45\times10^{-6}$ \\
+60  & 5333 & 0.784 & $4.80\times10^{-5}$ & 517 & 519 & $2.36\times10^{-6}$ \\
+80  & 5868 & 0.783 & $6.22\times10^{-5}$ & 696 & 699 & $2.48\times10^{-6}$ \\
+100 & 6347 & 0.783 & $7.64\times10^{-5}$ & 880 & 883 & $2.61\times10^{-6}$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\subsection{Specific Fuel Consumption Estimation}
+
+The specific fuel consumption (SFC) was calculated as the ratio of fuel mass flow rate to thrust produced. The results indicate that SFC increases with throttle setting, reflecting the higher fuel consumption required to generate increased power output.
+
+Lower SFC values are observed at climb conditions compared to cruise, as the propeller operates at higher efficiency and produces greater useful thrust relative to fuel consumption. This highlights the importance of operating conditions in determining propulsion efficiency.
+
+\subsection{Discussion}
+The engine--propeller matching results illustrate how the operating point of the propulsion 
+system is determined by the balance between engine torque and propeller torque requirements. 
+For each flight speed, the propeller adjusts its operating RPM such that the torque required 
+matches that supplied by the engine.
+
+From the results, the maximum cruise speed for the baseline configuration is approximately 
+$41.36\,\text{m/s}$, corresponding to the point where thrust equals drag. At lower speeds, 
+thrust exceeds drag, resulting in positive excess thrust and enabling climb. The maximum 
+rate of climb is approximately $4.17\,\text{m/s}$, occurring where the difference between 
+thrust and drag is greatest.
+
+As flight speed increases, the advance ratio increases, reducing propeller loading and 
+therefore thrust. Simultaneously, drag increases rapidly with speed. The intersection of 
+these two trends defines the maximum achievable speed of the aircraft.
+
+Increasing throttle shifts the thrust curve upward, allowing higher thrust levels at all 
+speeds. This results in both an increase in maximum speed and a significant increase in 
+excess thrust, which directly improves climb performance. These results highlight that 
+aircraft performance is governed by the interaction between propeller aerodynamics, engine 
+characteristics, and airframe drag.
+
+\section{Impact of Propeller Pitch Setting}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/pitch_cruise.png}
+\caption{Effect of pitch on Thrust}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/pitch_climb.png}
+\caption{Effect of pitch on climb rate}
+\end{subfigure}
+
+\caption{Effect of pitch setting on aircraft performance}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Summary of pitch setting effects at 100\% throttle}
+\begin{tabular}{ccc}
+\toprule
+Pitch scale & $V_{\max}$ (m/s) & $RoC_{\max}$ (m/s) \\
+\midrule
+0.9 & 40.46 & 4.25 \\
+1.0 & 41.36 & 4.17 \\
+1.1 & 42.27 & 4.06 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+The effect of pitch variation on aircraft performance is clearly demonstrated by the results 
+in Table~\ref{tab:pitch}. Increasing the pitch scale from 0.9 to 1.1 results in an increase 
+in maximum speed from $40.46\,\text{m/s}$ to $42.27\,\text{m/s}$, corresponding to an 
+increase of approximately $4.5\%$. This indicates that higher pitch settings improve 
+high-speed performance by better matching the propeller to larger advance ratios. However, this improvement in cruise performance comes at the expense of climb capability. 
+The maximum rate of climb decreases from $4.25\,\text{m/s}$ at a pitch scale of 0.9 to 
+$4.06\,\text{m/s}$ at 1.1, representing a reduction of approximately $4.5\%$. This occurs 
+because increasing pitch reduces the effective angle of attack at low speeds, decreasing 
+thrust generation in the climb regime. The baseline pitch setting (scale = 1.0) provides a balanced compromise, with a maximum 
+speed of $41.36\,\text{m/s}$ and a climb rate of $4.17\,\text{m/s}$. This configuration 
+achieves near-optimal cruise performance while maintaining only a small reduction in climb 
+capability relative to the lower pitch setting.
+
+\section{Engine scaling}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/engine_cruise.png}
+\caption{Effect of engine size on Thrust}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\textwidth}
+\includegraphics[width=\linewidth]{figures/engine_climb.png}
+\caption{Effect of engine size on climb rate}
+\end{subfigure}
+
+\caption{Effect of engine power scaling on aircraft performance}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Summary of engine size effects at 100\% throttle}
+\begin{tabular}{ccc}
+\toprule
+Engine scale factor & $V_{\max}$ (m/s) & $RoC_{\max}$ (m/s) \\
+\midrule
+0.5 & 31.82 & 1.37 \\
+1.0 & 41.36 & 4.17 \\
+1.5 & 41.82 & 7.03 \\
+2.0 & 37.73 & 9.85 \\
+\bottomrule
+\end{tabular}
+\label{tab:engine_size_summary}
+\end{table}
+
+\subsection{Discussion}
+The effect of engine scaling on aircraft performance is clearly reflected in the results 
+presented in Table~\ref{tab:engine}. Increasing the engine scale from 0.5 to 1.0 results 
+in a substantial increase in maximum speed from $31.82\,\text{m/s}$ to $41.36\,\text{m/s}$, 
+indicating that the aircraft is power-limited at low engine sizes.
+
+Further increases in engine size yield diminishing returns in maximum speed. Increasing 
+the scale from 1.0 to 1.5 results in only a marginal increase to $41.82\,\text{m/s}$ 
+(approximately $1.1\%$), while increasing the scale to 2.0 leads to a reduction in maximum 
+speed to $37.73\,\text{m/s}$. This indicates that the aircraft transitions from a 
+power-limited regime to a drag-limited regime, where additional power does not translate 
+into higher cruise speed. In contrast, the rate of climb increases significantly with engine scaling. The climb rate 
+increases from $4.17\,\text{m/s}$ at baseline to $7.03\,\text{m/s}$ at a scale of 1.5 and 
+$9.85\,\text{m/s}$ at a scale of 2.0, more than doubling overall. This is because climb 
+performance depends on excess thrust, which continues to increase with engine power even 
+when maximum speed is constrained by drag. These results demonstrate that increasing engine size is highly effective for improving 
+climb performance, while gains in maximum speed are limited once aerodynamic drag becomes 
+dominant.
+
+\section{Overall Discussion}
+The results of this study demonstrate that propeller performance is primarily governed by 
+advance ratio, which dictates the aerodynamic loading of the blade elements. At low advance 
+ratios, the propeller produces high thrust but operates inefficiently due to significant 
+induced losses. At higher advance ratios, the propeller becomes under-loaded, resulting in 
+reduced thrust despite improved aerodynamic efficiency. The interaction between propeller characteristics and engine performance determines the 
+operating envelope of the aircraft. The engine torque curve defines the achievable RPM, 
+while the propeller converts this into thrust, which must overcome airframe drag to enable 
+flight. Pitch variation provides a mechanism for tailoring performance to specific mission 
+requirements. Lower pitch settings favour climb by increasing low-speed thrust, while 
+higher pitch settings improve cruise performance by better matching higher advance ratios. Engine scaling highlights the transition between power-limited and drag-limited regimes. 
+While increasing engine power significantly improves climb performance, its effect on 
+maximum speed becomes limited once drag dominates. Overall, the optimal propulsion configuration represents a balance between aerodynamic 
+efficiency, engine capability, and mission objectives, rather than maximising a single 
+performance metric.
+
+\section{Conclusion}
+
+This study analysed the performance of an APC20x8 propeller using blade element momentum theory and matched it with a given engine and airframe.
+
+The results show that propeller performance is strongly influenced by advance ratio and RPM, with efficiency peaking at intermediate operating conditions. Engine–propeller matching demonstrated that maximum flight speed is determined by the balance between thrust and drag, while climb performance depends on excess thrust.
+
+Variations in propeller pitch and engine size highlight important trade-offs in propulsion system design. Increasing pitch improves maximum speed but reduces climb performance, while increasing engine power significantly enhances climb capability with limited impact on maximum speed.
+
+Overall, the analysis provides valuable insight into the interaction between propeller, engine, and airframe, and highlights the importance of selecting appropriate design parameters for optimal aircraft performance.
+
+\newpage
+\section*{Bibliography}
+\newpage
+%------------------------------------------------
+\appendix
+\section{Appendix}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/Ct_vs_J.png}
+    \caption{$C_t$ vs advance ratio J}
+    \label{fig:thrustcoefficient}
+\end{figure}
+\section{Main MATLAB Code}
+\lstinputlisting[caption={Main code for propellor geometry and xfoil data}, label={lst:matlab}]{maincode.m}
+\lstinputlisting[caption={Blade element code}, label={lst:matlab}]{BladeElementCode.m}
+\lstinputlisting[caption={Engine matching code}, label={lst:matlab}]{EngineMatchingFinal.m}
+
+
+\end{document}
