@@ -1,0 +1,820 @@
+
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{subcaption} % Correct package for subfigures
+
+\usepackage[a4paper, left=1.5cm, right=1.5cm, top=1.2cm, bottom=1.2cm]{geometry}
+\usepackage[justification=centering]{caption}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{gensymb}
+\usepackage{subcaption}
+\usepackage{chemformula}
+\usepackage{siunitx}
+\usepackage{cite}
+\usepackage[colorlinks, linkcolor=black, anchorcolor=black, citecolor=black]{hyperref}
+
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{geometry}
+\setlength{\parskip}{0.5em}
+\usepackage[table]{xcolor}
+
+\title{}
+
+\linespread{1}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+\begin{flushright}
+\includegraphics[width=0.3\textwidth]{Images/usydNew.png}\\[2cm]
+\end{flushright}
+
+\center 
+
+
+\textsc{\LARGE The University of Sydney}\\[0.75cm]
+\textsc{\Large School of Aerospace, Mechanical and Mechatronic Engineering}\\[1cm]
+
+
+\HRule \\[0.4cm]
+{ \huge \bfseries Lab Report AMME3500}\\[0.4cm] 
+{ \Large \bfseries System Dynamics and Control}
+\HRule \\[1.25cm]
+
+
+{\large Max O'Keefe: 520453711}\\
+{\large Harry Lieshout: 530619370}\\
+{\large Macklin O'Reilly: 520480027}\\
+{\large ---------------------------}\\
+{\large GROUP 117, LAB05, WED 11 AM}\\
+
+{\large \today}\\[1.5cm]
+
+
+
+\vfill
+
+\end{titlepage}
+
+\newpage
+\section{Lab 1}
+\subsection{Experiment 1}
+\subsubsection{Questions 1.1}
+\begin{itemize}
+    \item (a):
+    \begin{itemize}
+        \item The relationship between $u_e$ and $x_e$ at equilibrium is found by letting $\dot x = 0$: $u=x^2$
+        \item $x_e=3 \Rightarrow u_e=9$ and $x_e=1 \Rightarrow u_e=1$
+    \end{itemize}
+    Linearised systems:
+
+    $x_e=1$
+    \begin{itemize}
+        \item $\dot x = -2(x-1)+(u-1) \Rightarrow \dot x = -2x+u+1$
+        \item $\dot \delta_x = -2\delta_x + \delta_u$
+    \end{itemize}
+
+    $x_e=3$
+
+    \begin{itemize}
+        \item $\dot x = -6(x-3)+(u-9) \Rightarrow \dot x = -6x+u+9$
+        \item $\dot \delta_x = -6\delta_x + \delta_u$
+    \end{itemize}
+    
+    \item (b): 
+    \begin{figure}[htbp]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1_x(t)_non_linear_equil_1.png}
+            \caption{Non-linear system around equilbrium point of 1}
+            \label{fig:non-linear_equil_1}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1__x(t)_linear_equil_1.png}
+            \caption{Linearised system around equilibrium point of 1}
+            \label{fig:linearised_equil_1}
+        \end{subfigure}
+        \caption{Equilibrium point $x_e=1, u_e=1$ (with 0.05 amplitude sine wave to simulate noise).}
+        \label{fig:1.1(b)}
+    \end{figure}
+    \\
+        The graphs \ref{fig:1.1(b)} show the comparison between how the non-linear and the linearised system reach an equilibrium of 1. They both clearly succeed in reaching this equilbrium point however, the linearised system seems to reach a value of of slightly earlier as it has a steeper slope between 0 and 1 second. The simulated noise provides interesting results. It is clear that in both cases the noise continues to affect the system even once it has reached equilbrium as both graphs oscillate around the equilbrium value once it is reached. 
+    \item (c):
+    \begin{figure}[htbp]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1__x(t)_non_linear_equil_3.png}
+            \caption{Non-linear system around equilibrium point of 3}
+            \label{fig:non-linear_equil_1}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1__x(t)__linear_equil_3.png}
+            \caption{Linearised system around equilibrium point of 3}
+            \label{fig:linearised_equil_1}
+        \end{subfigure}
+        \caption{Equilibrium point $x_e=3, u_e=9$ (with 0.05 amplitude sine wave to simulate noise).}
+        \label{fig:1.1(c)}
+    \end{figure}
+
+    Similar to above both the linearised and non-linear systems reach the equilbrium point of 3 in figures \ref{fig:1.1(c)}. Once again there is some simulated noise however it is much harder to make out as the increased equilbrium value has amplified the y-axis values and thus reduced the relative impact of the noise. As above the linearised system reaches the equilbrium point slight early with a steeper gradient for the first 0.5 seconds. 
+    \item (d):
+
+    
+    \begin{figure}[htbp]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1_delta_x.png}
+            \caption{$\delta_x$(t) around equilibrium point of 1}
+            \label{fig:delta_x}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1_delta_u.png}
+            \caption{$\delta_u$(t) around equilibrium point of 1}
+            \label{fig:delta_u}
+        \end{subfigure}
+        \caption{Equilibrium point $x_e=3, u_e=9$}
+        \label{fig:1.1(d)}
+    \end{figure}
+
+    Figures \ref{fig:1.1(d)} show how the changes in x and change in u relate to time. Clearly, as x approaches equilibrium the change in x moves to zero which is observed in the figure. The input is a step input which has a start time of 0 seconds and therefore the change of the input will be 0 across all time as seen above. 
+    
+    \begin{itemize}
+    \item The relationship between \(\delta_x(t)\) and \(x(t)\) is that as \(\delta_x(t)\) approaches a small value, \(x(t)\) approaches the equilibrium value. Since \(\delta_x(t)\) remains small, \(x(t)\) stays close to the equilibrium.
+    \item The relationship between \(\delta_u(t)\) and \(u(t)\) is similar: \(u(t)\) is the sum of \(\delta_u(t)\) and a constant (in this case, 1). Because \(\delta_u(t)\) remains small, \(u(t)\) stays near this constant value.
+    \end{itemize}
+
+    
+    
+\end{itemize}
+
+\subsection{Experiment 2}
+\subsubsection{Questions 1.2}
+\begin{itemize}
+    \item (a): \begin{equation}
+        \dot{x} = -2x(t)+K_rx_{ref}
+    \end{equation}
+
+    \begin{equation}
+        \lim_{t \to \infty} x(t) = x_{\text{ref}}
+    \end{equation}
+    \begin{equation}
+        2x_{ref}=K_rx_{ref}
+    \end{equation}
+    \begin{equation}
+        K_r=2
+    \end{equation}
+    
+    \item (b): 
+    \begin{figure}[htbp]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_2__u(t)_open.png}
+            \caption{Control input (u(t)) for open loop system}
+            \label{fig:delta_x}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/Lab1_2__x(t)_open_loop.png}
+            \caption{System response (x(t)) for open loop system}
+            \label{fig:delta_u}
+        \end{subfigure}
+        \caption{Open loop system using a feedforward gain ($K_r$) of 2}
+        \label{fig:1.2(b)}
+    \end{figure}
+
+    Figure \ref{fig:1.2(b)} shows that the open loop system attempts to reach a reference value of 2 but due to the selected feedforward gain it settles at a value of 1. This also takes up to 3 seconds to reach. 
+
+    \begin{figure}[H]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/lab1_1_close_loop_u(t).png}
+            \caption{Control input (u(t)) for closed loop system}
+            \label{fig:delta_x}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{lab_1_figs/Lab1_1_closed_loop_K_p_2.png}
+            \caption{System response (x(t)) for closed loop system}
+            \label{fig:delta_u}
+        \end{subfigure}
+        \caption{Closed loop system using a proportional gain ($K_p$) of 2}
+        \label{fig:1.2(ba)}
+    \end{figure}
+
+    Compared to the open loop system in figure \ref{fig:1.2(b)} the closed loop figures in figure \ref{fig:1.2(ba)} reach a settled value alot quicker (around 2 seconds). Although once again due to the choice of proportional gain the settled value is 0.5 whilst the reference value was twice as large at 1. 
+    \item (c): 
+
+    
+    
+    Given the system dynamics:
+    \[
+    \dot{x} = -2x + u,
+    \]
+    and the closed-loop control law:
+    \[
+    u = K_p (x_{\text{ref}} - x),
+    \]
+    the closed-loop system becomes:
+    \[
+    \dot{x} = -(2 + K_p)x + K_p x_{\text{ref}}.
+    \]
+    
+    For stability, the coefficient of \(x\) must be negative:
+    \[
+    -(2 + K_p) < 0 \quad \Rightarrow \quad K_p > -2.
+    \]
+    
+    However, to ensure a physically meaningful and proper feedback response, the feedback gain should be positive, i.e.,
+    \[
+    K_p > 0.
+    \]
+    
+    Therefore, the closed-loop system is asymptotically stable for all \(K_p > -2\), but in practice, \(K_p\) should be chosen positive.
+    
+    \item (d): \begin{equation}
+        \dot{x} = -2*x(t)+K_p(x_{ref}-x(t))
+    \end{equation}
+    At steady state:
+    \begin{equation}
+         2*x(\infty)= K_p*(r-x(\infty))
+    \end{equation}
+    As:
+    \begin{equation}
+         e(\infty)=r-x(\infty)
+    \end{equation}
+    \begin{equation}
+         2*x(\infty)= K_p*e(\infty)
+    \end{equation}
+    Using:
+    \begin{equation}
+         x(\infty) = r-e(\infty)
+    \end{equation}
+    \begin{equation}
+         \frac{2r-2e(\infty)}{K_p}= e(\infty)
+    \end{equation}
+    And finally:
+    \begin{equation}
+         e(\infty) = \frac{2r}{2+K_p} 
+         \label{eq:Final error form}
+    \end{equation}
+    To find when $x(\infty)$ is 0.95 we can solve equation \ref{eq:Final error form} for when $e(\infty)$ is 0.05. This gives a $K_p$ value of 38. Figure \ref{fig:K_p=38} verifies that this value will produce a steady state value of 0.95.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{lab_1_figs/1_2___K_p=38.png}
+        \caption{Proportional constant of 38 verifying that this will approach a steady state value of 0.95.}
+        \label{fig:K_p=38}
+    \end{figure}
+    \item (e): As $K_p$ increases the steady state error will decrease. This can be showed analytically by the series of equations above:
+    
+Equation \ref{eq:Final error form} clearly shows that as $K_p$ increases the fraction will decrease and thus $e(\infty)$ will decrease. In other words the steady state x value will be closer to the reference value. \ref{fig:closed_loop_comparison} Shows two $K_p$ values both 1 and 10. It is clear that the $K_p$ value of 10 approaches 0.83 whilst the $K_p$ value of 1 only approaches 0.33 which proves the above point. Also it seems that the higher $K_p$ value is able to deal with the small sine wave disturbance a lot better. 
+
+\end{itemize}
+
+\section{Lab 2}
+\subsection{Experiment 1: Proportional-Derivative (PD) Control}
+
+\subsubsection{Prework}
+Consider the second order system:
+\begin{equation}
+    \ddot x(t) + 3 \dot x(t) + 2x(t) = u(t)
+\end{equation}
+The characteristic equation for 
+
+\begin{equation}
+\ddot{x}(t) + 3\dot{x}(t) + 2x(t) = 0
+\end{equation}
+
+is:
+
+\begin{equation}
+\lambda^2 + 3\lambda + 2 = 0
+\end{equation}
+
+Factoring:
+
+\begin{equation}
+(\lambda + 1)(\lambda + 2) = 0 \quad \Rightarrow \quad \lambda = -1, -2
+\end{equation}
+
+
+The system has poles $s_{1, 2} = -1, -2$. The system is stable as both poles are negative (homogeneous solution approaches 0).
+
+% (b)
+ \begin{equation}
+     G_{plant} = \frac{1}{(s+1)(s+2)}
+ \end{equation}
+
+% (c)
+
+\begin{equation}
+    x(t)=-e^{-t}+\frac{1}{2}e^{-2t}+\frac{1}{2}
+\end{equation}
+
+\subsubsection{a) Computing poles}
+\begin{align}
+    G_{controller}&=K_ds+K_p\\
+    G_{open}&=G_{controller}\times G_{plant}\\
+    &=K_d\frac{s+\frac{K_p}{K_d}}{(s+1)(s+2)}\\
+    G_{closed}&=\frac{G_{open}}{1+G_{open}}\\
+    &=K_d\frac{s+\frac{K_p}{K_d}}{s^2+(3+K_d)s+(2+K_p)}
+\end{align}
+
+For this closed loop transfer function
+
+\begin{align}
+    Poles &=\frac{-(3+K_d)\pm\sqrt{1+6K_d+K_d^2-4K_p}}{2}\\
+    Zero&=-\frac{K_p}{K_d}
+\end{align}
+
+For $K_p=38$ and $K_d=0.1$:
+\begin{align}
+    Poles &=-1.55\pm i\sqrt{37.5975}\\
+    Zero&=-380
+\end{align}
+
+For $K_p=38$ and $K_d=10$:
+\begin{align}
+    Poles &=-5, -8\\
+    Zero&=-3.8
+\end{align}
+
+
+\subsubsection{b) Response functions}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Images/Lab 2: Experiment 1/PD_graph_1.png}
+    \caption{Response function with PD Controller with $K_p = 38$ and $K_d = 0.1$}
+    \label{fig:PD1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Images//Lab 2: Experiment 1/PD2.png}
+    \caption{Response function with PD Controller with $K_p = 38$ and $K_d = 10$}
+    \label{fig:PD2}
+\end{figure}
+
+\subsubsection{c) Outputs approaching reference}
+Yes, in both Step 3 ($K_p = 38$, $K_d = 0.1$) and Step 4 ($K_p = 38$, $K_d = 10$), the output $x(t)$ approaches the reference value $r = 10$ as $t \rightarrow \infty$, suggesting that the steady-state error goes to zero. However, the rate and smoothness with which this occurs varies greatly between the two scenarios.
+\\
+\\
+To further reduce the steady-state error, one way would be to increase the proportional gain $K_p$.  This raises the system's sensitivity to the mistake $e(t) = r - x(t)$, causing the output to align more closely with the reference.
+
+\subsubsection{d) Oscillations}
+There are oscillations in the response with $K_d=0.1$ and no oscillations in the response with $K_d=10$. This is due to the complex poles in the $K_d=0.1$ case which result in $e^{\alpha t}\sin(\beta x)$ and $e^{\alpha t}\cos(\beta x)$ terms in the time-domain response. As $\text{Re}(poles)<0$, these oscillations are damped and as such the system is stable. The $K_d=10$ case has no oscillations and is stable due to having real, negative poles and zero. 
+
+\subsubsection{e) Advantages of PD controllers}
+PD controllers are able to account for errors in approaching a reference value ($K_p$) and enable control of approach time and damping ($K_d$). Without the derivative controller, oscillations can also occur (observed in the $K_d=0.1$ case, but not in the $K_d=10$ case) which can be undesired. 
+
+\subsection{Lab 2: PI Controller}
+\subsubsection{a) Poles and Zeroes}
+\begin{align}
+    G_{plant}&=\frac{1}{s+2}\\
+    G_{controller}&=K_p+\frac{K_i}{s}\\
+    &=K_p\frac{s+\frac{K_i}{K_p}}{s}\\
+    G_{open}&=G_{plant}\times G_{controller}\\
+    &=K_p\frac{s+\frac{K_i}{K_p}}{s(s+2)}\\
+    G_{closed} &= \frac{G_{open}}{1+G_{open}}\\
+    &=K_p\frac{s+\frac{K_i}{K_p}}{s^2+(2+K_p)s+K_i}
+\end{align}
+
+Thus for the closed system:
+
+\begin{align}
+    Poles &= \frac{-(2+K_p) \pm \sqrt{(2+K_p)^2-4K_i}}{2}\\
+    Zero &= -\frac{K_i}{K_p}
+\end{align}
+
+For $(K_p, K_i)=(1,4)$: $Poles =-1.5\pm \frac{i\sqrt{7}}{2}$
+
+For $(K_p, K_i)=(1,40)$: $Poles =-1.5\pm \frac{i\sqrt{151}}{2}$
+
+For $(K_p, K_i)=(10,4)$: $Poles =-6\pm \frac{\sqrt{128}}{2} \approx -0.34, -11.65$
+
+\subsubsection{b) Why does steady state error go to zero?}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Images/PI_controller.png}
+    \caption{Response for $(K_p, K_i)=(1, 4)$}
+    \label{fig:PI_1}
+\end{figure}
+The steady-state error goes to zero because of the integral term. The integral continuously sums the error over time and adjusts the control output to eliminate any residual error. Even if a small constant error remains, the integral term keeps increasing until the controller output compensates fully, driving the error to zero.
+
+\subsubsection{c) Different $K_p$ Comparison}
+As $K_p$ increases, the plots of $x(t)$ \ref{fig:lab2part2c} show a lower overshoot, faster rise time, and reduced settling time. This occurs because a larger proportional gain amplifies the control effort, driving the system more aggressively toward the setpoint. While moderate increases in $K_p$ can improve response speed, excessive values may compromise stability and increase settling time.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images//Lab 2: Experiment 2/image.png}
+    \caption{Response for Different $K_p$ values ($K_i=4$)}
+    \label{fig:lab2part2c}
+\end{figure}
+
+\subsubsection{d) Different $K_i$ Comparison}
+Changes in $K_i$ affected the frequency and oscillations in the system's response. A higher $K_i$ resulted in high-frequency oscillations, while a lower $K_i$ produced lower-frequency oscillations. Both systems eventually reached the steady-state value. This behaviour reflects the integral term’s role in eliminating steady-state error, but also its tendency to introduce strong oscillations if tuned incorrectly.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Images//Lab 2: Experiment 2/lab2part2d.png}
+    \caption{Response for Different $K_p$ values ($K_i=4$)}
+    \label{fig:lab2part2d}
+\end{figure}
+
+\newpage
+
+\section{Lab 3}
+Lab 3 models a rotary pendulumn contextualised as a crane. The crane has two main angles $\theta$ which is defined as the angle of rotation as the crane pivots around its base. Whilst $\alpha$ is the angle that the main load line makes with the vertical and therefore encompasses the 'swinging' pendulum effect of the load line and load. The crane's mission is to move to 4 reference points to pick up a load from each. It is assumed that the load is light enough that it has neglible effect on the cranes dynamics. The dynamics of the crane are shown below as the acceleration of both angles $\theta$ \ref{eq:Theta} and $\alpha$ \ref{eq:alpha}. 
+
+\begin{equation}
+\ddot{\theta} = \frac{1}{J_T} \left[ 
+    -\left(J_p + \frac{1}{4} m_p L_p^2\right)(D_r \dot{\theta} + k \theta) 
+    + \frac{1}{2} m_p L_p L_r D_p \dot{\alpha} 
+    + \frac{1}{4} m_p^2 L_p^2 L_r g \alpha 
+    + \left(J_p + \frac{1}{4} m_p L_p^2\right) \tau 
+\right]
+\label{eq:Theta}
+\end{equation}
+
+\begin{equation}
+\ddot{\alpha} = \frac{1}{J_T} \left[ 
+    \frac{1}{2} m_p L_p L_r (D_r \dot{\theta} + k \theta) 
+    - (J_r + m_p L_r^2) D_p \dot{\alpha} 
+    - \frac{1}{2} m_p L_p g (J_r + m_p L_r^2) \alpha 
+    - \frac{1}{2} m_p L_p L_r \tau 
+\right]
+\label{eq:alpha}
+\end{equation}
+
+    
+
+Where;
+\[
+J_T = J_p + m_p L^2 + J_r J_p + \frac{1}{4} J_r m_p L^2 \quad , \quad 
+\tau = \frac{K_t}{R_m} u
+\]
+
+
+It is given that the state and reference vectors \(\mathbf{x}\) and \(\mathbf{r}\) are found as:
+
+\begin{equation} \label{eq:state_ref_vectors}
+\mathbf{x} =
+\begin{bmatrix}
+\theta \\
+\alpha \\
+\dot{\theta} \\
+\dot{\alpha}
+\end{bmatrix}
+\quad \text{and} \quad
+\mathbf{r} =
+\begin{bmatrix}
+\theta_r \\
+0 \\
+0 \\
+0
+\end{bmatrix}
+\end{equation}
+
+This shows that state vector x contains the current values of both angles $\theta$ and $\alpha$ together with their respective time derivative. Whilst the reference (r) only provides a reference for the current value of $\theta$
+Solving for \(\dot{\mathbf{x}}\) where:
+
+\begin{equation} \label{eq:state_space_form}
+\dot{\mathbf{x}}(t) = A \mathbf{x}(t) + B u(t)
+\end{equation}
+
+Therefore, the matrices \(A\) and \(B\) can be calculated as:
+
+\begin{equation} \label{eq:A_matrix}
+A =
+\begin{bmatrix}
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1 \\
+- \dfrac{\left( J_p + \frac{1}{4} m_p L_p^2 \right) k}{J_T} & \dfrac{1}{4} \dfrac{m_p^2 L_p^2 L_r g}{J_T} & - \dfrac{\left( J_p + \frac{1}{4} m_p L_p^2 \right) D_r}{J_T} & \dfrac{1}{2} \dfrac{m_p L_p L_r D_p}{J_T} \\
+\dfrac{1}{2} \dfrac{m_p L_p L_r k}{J_T} & - \dfrac{1}{2} \dfrac{m_p L_p g \left( J_r + m_p L_r^2 \right)}{J_T} & \dfrac{1}{2} \dfrac{m_p L_p L_r D_r}{J_T} & - \dfrac{\left( J_r + m_p L_r^2 \right) D_p}{J_T}
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation} \label{eq:B_matrix}
+B =
+\begin{bmatrix}
+0 \\
+0 \\
+\dfrac{K_t \left(J_p + \frac{1}{4} m_p L_p^2 \right)}{R_m J_T } \\
+-\dfrac{K_t m_p L_p L_r}{2 R_m J_T }
+\end{bmatrix}
+\end{equation}
+
+Putting matrices in the form of \(\dot{\mathbf{x}} = A \mathbf{x} + B u\):
+
+\begin{equation} \label{eq:state_space_expanded}
+\begin{bmatrix}
+\dot{\theta} \\
+\dot{\alpha} \\
+\ddot{\theta} \\
+\ddot{\alpha}
+\end{bmatrix}
+=
+A
+\begin{bmatrix}
+\theta \\
+\alpha \\
+\dot{\theta} \\
+\dot{\alpha}
+\end{bmatrix}
++
+B u
+\end{equation}
+
+where \(A\) and \(B\) are defined in equations \eqref{eq:A_matrix} and \eqref{eq:B_matrix}.
+
+
+
+
+
+
+
+There is also the other part of the state-space form that is \eqref{eq:output_equation}. There is no D matrix in this example so that term can go to 0. For the moment the only notable variable will be the value of $\theta$ which means that matrix C becomes a row matrix with a 1 in the first column followed by zeroes \eqref{eq:bmatrix}.
+
+\begin{equation} \label{eq:output_equation}
+    \mathbf{y}(t) = C \mathbf{x}(t) + D u(t) \quad C =
+\begin{bmatrix}
+1 & 0 & 0 & 0 \\
+\end{bmatrix}
+\end{equation}
+
+\begin{multicols}{2}
+    
+
+\subsection{Controllability}
+
+To determine if the system is controllable, we construct the controllability matrix \( W \) using the state-space matrices \( A \) and \( B \):
+
+\begin{equation}
+W = \begin{bmatrix} B & AB & A^2B & A^3B \end{bmatrix}
+\end{equation}
+
+A system is controllable if the matrix \( W \) has full rank. For a system of order \( n = 4 \), this means:
+
+\begin{equation}
+\text{rank}(W) = 4
+\end{equation}
+
+Using MATLAB’s Control System Toolbox (specifically: ctrb(A,B)), we can compute that the rank is equal to 4 and therefore is full.
+
+Thus, the system is \textbf{controllable}. This implies that we can design a state-feedback controller to place the poles of the closed-loop system at any desired locations in the complex plane.
+
+
+\subsection{Characteristic polynomial}
+The characteristic polynomial for this systems can be calculated by solving equation \ref{eq:char_poly} which gives the polynomial shown in \ref{eq:char_poly_solved}
+
+\begin{equation}
+    det(s\textbf{I}-A)=0
+    \label{eq:char_poly}
+\end{equation}
+
+\begin{equation}
+    s^4 + 21.9s^3 + 316.3s^2 + 1737.5s + 913.8
+    \label{eq:char_poly_solved}
+\end{equation}
+\subsection{Design objective and desired characteristic polynomial}
+The design objective is to move the crane between four specified locations and bring the pendulum tip to a stop within a 20-second time limit. To ensure safety, the system must not exceed a maximum overshoot of 5\%, as larger overshoots may lead to hazardous crane motions. Additionally, minimizing pendulum oscillations ($\alpha$) is critical for stable operation. To meet these criteria, a settling time of 10 seconds is selected, with the dominant poles placed 5 and 6 times further to the left to avoid repeated pole effects. The non-dominant poles are moved 5 times further to the left to enhance overall stability without compromising response time.
+
+
+\begin{equation}
+\left(s^2 + 2\zeta \omega_n s + \omega_n^2\right)\left(s + 5\zeta \omega_n\right)\left(s + 6\zeta \omega_n\right)
+\label{eq:desired}
+\end{equation}
+
+Setting the overshoot to 5\% can give a damping ratio of around 0.7 as shown by equation \label{eq:damping}
+\begin{equation}
+\zeta = \frac{\ln(M)}{\sqrt{(2\pi)^2 + \left[\ln(M)\right]^2}}
+\label{eq:damping}
+\end{equation}
+
+Using the damping ratio and the settling time the natural frequency ($\omega_n$) can be found using equation \ref{eq:natural}. This comes to be 0.56.
+
+\begin{equation}
+    \omega_n=\frac{3.92}{T_s \zeta}
+    \label{eq:natural}
+\end{equation}
+
+Now that these values are all found the poles of the system can be calcualed. The desired poles are:
+
+The desired poles are the first ones that have both real and imaginary parts whilst the non-dominant poles only have real components.:
+\[
+\quad -1.332 \pm 0.375i \quad , -0.064, \quad, -1.98
+\]
+
+\subsection{Controller design}
+To implement a state feedback controller of the form
+\[
+u = -Kx + k_{ff} r
+\]
+where \(K\) is the state feedback gain matrix, \(k_{ff}\) is the feedforward gain, and \(r\) is the reference input, the gain \(K\) can be computed using pole placement such that the eigenvalues of the matrix \((A - BK)\) match the desired pole locations defined above.
+
+To guarantee steady-state tracking of a constant reference \(r\), the feedforward gain \(k_{ff}\) is calculated as
+\[
+k_{ff} = \frac{1}{C (A - BK)^{-1} B}
+\]
+
+The required gains are calculated to be approximately
+\[
+K \approx \begin{bmatrix} 0.6992 & -0.0786& 0.1231 & 0.0696 \end{bmatrix}
+\]
+and
+\[
+k_{ff} \approx 0.859
+\]
+
+Thus, the controller can be expressed as
+\[
+u = \begin{bmatrix} 0.6992 & -0.0786& 0.1231 & 0.0696 \end{bmatrix} x + 0.859 r
+\]
+
+
+\subsection{Results}
+
+
+
+Figure \ref{fig:theta_alpha_combined} clearly shows that the controller is successful in tracking all of the reference points well inside the 20 second time limit. This task is completed within 7 seconds. The transition between reference points appears smooth which is ideal for the mission. The fluctuations in alpha are slightly concerning as this resembles the pendulum swinging as it moves around. Whilst these angles are rather small it must be considered that when the weight of the load is taken into account these values may explode due to the inertia of the load. Therefore to further improve this model the alpha fluctuations must be reduced further. To do this the total time taken to move between the references must be increased. As stated above there is an upper limit of 20 seconds however there is no reason to minimise this time in fact our goal will be to have a final time of around 20 seconds in an attempt to minimise the oscillation of alpha. 
+
+
+
+Figure \ref{fig:theta_alpha_combined_2} shows the new controller. This is set with a settling time of 22 seconds and a factor of 7 to send the non-dominant poles to the left of the complex plane. Clearly, the controller is still accurate in tracking al reference points and completes the task in a much longer time of approximately 19 seconds. However, this does still comply with the 20 second time limit and most importantly figure (b) shows that the pendulum angle alpha has reduced its oscillating amplitude by approximately 5 degrees to now only be at 2 degrees. This is a massive improvement on the original controller as now the crane will be able to operate a lot safer as the load and load cables will be more stable as the crane rotates. 
+
+\end{multicols}
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures_lab_3/Theta_2nd.png}
+        \caption{} % Add your desired caption here
+        \label{fig:theta_1st}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures_lab_3/alpha_2.png}
+        \caption{Caption} % Replace "Caption" with your specific text
+        \label{fig:Alpha_1st}
+    \end{subfigure}
+    \caption{Figure (a) shows how the controller is able to track a range of references for theta. Figure (b) shows how the pendulum angle alpha fluctuates whilst the crane moves to different theta positions. }
+    \label{fig:theta_alpha_combined_2}
+\end{figure}
+
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures_lab_3/theta_1st.png}
+        \caption{} % Add your desired caption here
+        \label{fig:theta_1st}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures_lab_3/Alpha_1.png}
+        \caption{Caption} % Replace "Caption" with your specific text
+        \label{fig:Alpha_1st}
+    \end{subfigure}
+    \caption{Figure (a) shows how the controller is able to track a range of references for theta. Figure (b) shows how the pendulum angle alpha fluctuates whilst the crane moves to different theta positions. }
+    \label{fig:theta_alpha_combined}
+\end{figure}
+\begin{multicols}{2}
+    
+\section{Feasibility and Limitations}
+
+Although the designed controller demonstrates strong performance in simulation—successfully tracking reference points within the 20-second timeframe—its application in a real-world environment presents several challenges that must be addressed for practical deployment.
+
+\subsection{Sensitivity to Model Accuracy}
+
+The use of a feed-forward gain assumes exact knowledge of the system matrices \( A \) and \( B \). However, real crane dynamics are often nonlinear and difficult to model precisely. This discrepancy between the model and the actual system can result in steady-state tracking errors, particularly in the presence of external disturbances such as wind or unmodeled friction.
+
+To mitigate this, an integrator could be incorporated into the state-space formulation to reduce steady-state errors and improve robustness against modeling inaccuracies and low-frequency disturbances.
+
+\subsection{Neglect of State Estimation and Noise}
+
+The controller assumes full access to the system state at all times, which is rarely feasible in practice. Real-world implementations are constrained by limited sensor availability, measurement noise, and sensor delays. As a result, not all state variables can be directly measured.
+
+To address this limitation, a state observer—such as a Luenberger observer or a Kalman filter—could be implemented to estimate the full system state from partial and noisy measurements. A Kalman filter, in particular, offers optimal estimation performance under Gaussian noise assumptions and would enhance control reliability under realistic conditions.
+
+\subsection{Oscillations and Load Stability}
+
+A critical concern in practical operation is the pendulum angle \( \alpha \), which exhibits noticeable fluctuations during rapid transitions. While these oscillations were relatively small in simulation with the second controller, they may become significantly amplified in practice due to the inertia of a suspended load and cable dynamics.
+
+Such oscillations pose a safety risk and can degrade overall system stability. Rapid control inputs can excite the pendulum mode, especially with heavier payloads. Extending the allowable timeframe beyond 20 seconds or designing smoother reference trajectories could reduce oscillatory behavior and improve load stability during operation.
+
+
+\end{multicols}
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%--Figures--%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+
+
+
+\section{Appendix}
+
+\begin{table}[H]
+\centering
+\caption{Parameter values}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
+\hline
+$m_r$ & 0.095 & kg \\
+$m_p$ & 0.024 & kg \\
+$L_r$ & 0.085 & m \\
+$L_p$ & 0.129 & m \\
+$J_r$ & $5.7 \times 10^{-5}$ & kg$\cdot$m$^2$ \\
+$J_p$ & $3.3 \times 10^{-5}$ & kg$\cdot$m$^2$ \\
+$K_t$ & 0.042 & Nm/A \\
+$R_m$ & 8.40 & $\Omega$ \\
+$D_r$ & 0.0015 & Nms/rad \\
+$D_p$ & 0.0004 & Nms/rad \\
+$k$ & 0.0008 & Nm/rad \\
+\hline
+\end{tabular}
+\label{tab:params}
+\end{table}
+
+
+
+\begin{equation} \label{eq:state_space_full}
+\begin{bmatrix}
+\dot{\theta} \\
+\dot{\alpha} \\
+\ddot{\theta} \\
+\ddot{\alpha}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1 \\
+- \dfrac{\left( J_p + \frac{1}{4} m_p L_p^2 \right) k}{J_T} & \dfrac{1}{4} \dfrac{m_p^2 L_p^2 L_r g}{J_T} & - \dfrac{\left( J_p + \frac{1}{4} m_p L_p^2 \right) D_r}{J_T} & \dfrac{1}{2} \dfrac{m_p L_p L_r D_p}{J_T} \\
+\dfrac{1}{2} \dfrac{m_p L_p L_r k}{J_T} & - \dfrac{1}{2} \dfrac{m_p L_p g \left( J_r + m_p L_r^2 \right)}{J_T} & \dfrac{1}{2} \dfrac{m_p L_p L_r D_r}{J_T} & - \dfrac{\left( J_r + m_p L_r^2 \right) D_p}{J_T}
+\end{bmatrix}
+\begin{bmatrix}
+\theta \\
+\alpha \\
+\dot{\theta} \\
+\dot{\alpha}
+\end{bmatrix}
++
+\begin{bmatrix}
+0 \\
+0 \\
+\dfrac{K_t \left(J_p + \frac{1}{4} m_p L_p^2 \right)}{R_m J_T } \\
+-\dfrac{K_t m_p L_p L_r}{2 R_m J_T }
+\end{bmatrix}
+u
+\end{equation}
+
+\end{document}
+
+
