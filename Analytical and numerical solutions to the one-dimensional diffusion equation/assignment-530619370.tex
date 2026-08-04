@@ -1,0 +1,442 @@
+\documentclass[a4paper,12pt]{article} % Document class.
+\usepackage[margin=1.0in]{geometry} % Set margin sizes here.
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % For figures.
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{fancyhdr} % For custom page headers and footers.
+
+%%
+\usepackage{xcolor}
+
+% ---------------------------------------------------------
+% User-defined macros.
+% \CS  -- shorthand for the steady-state solution C_S(x).
+% \CH  -- shorthand for the homogeneous solution C_H(x,t).
+% Using macros keeps the source consistent and makes it easy
+% to change notation document-wide in one place.
+% ---------------------------------------------------------
+\newcommand{\CS}{C_{S}}
+\newcommand{\CH}{C_{H}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+%
+
+\title{OLET1666 Assignment}
+\author{SID: 530619370}
+\date{22/02/2026}
+
+
+\begin{document}
+
+% Configure page headers and footers using fancyhdr.
+\pagestyle{fancy}
+\fancyhf{} % Clear all default header/footer fields.
+\fancyhead[L]{\small OLET1666 Assignment} % Left header: document title.
+\fancyhead[R]{\small SID: 530619370}      % Right header: student ID.
+\fancyfoot[C]{\thepage}                   % Centred footer: page number.
+\renewcommand{\headrulewidth}{0.4pt}      % Thin rule below the header.
+
+\pagenumbering{roman}
+\maketitle
+
+\begin{abstract}
+This report presents analytical and numerical solutions to the one-dimensional diffusion equation governing carbon monoxide (CO) transport along a mine shaft of length $L = \SI{2000}{m}$. An exact analytical solution is derived via separation of variables, decomposing the problem into a linear steady-state component and a transient Fourier series component. A Forward-Time Central-Space (FTCS) finite difference scheme is then implemented numerically and verified to be second-order accurate in space. The numerical scheme is applied to assess miner safety under a realistic evacuation scenario and subsequently extended to include a spatially varying source term modelling additional CO generation within the shaft.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+\newpage
+
+\pagenumbering{arabic}
+
+\section{QUESTION 1: ANALYTICAL SOLUTION}
+
+\subsection{Boundary and Initial Conditions}
+\label{sec:bcs}
+The boundary and initial conditions for this problem are as follows.
+
+\begin{description}
+    \item[Boundary conditions:]~
+    \begin{itemize}
+        \item $x = 0$ (deep end): $C(0,\, t) = 1$ \quad (fixed CO concentration)
+        \item $x = L$ (surface): $C(L,\, t) = 0$ \quad (fixed CO concentration)
+    \end{itemize}
+    \item[Initial condition:]~
+    \begin{itemize}
+        \item $t = 0$: $C(x,\, 0) = 0$ \quad (no CO initially present)
+    \end{itemize}
+\end{description}
+
+\subsection{Solution Composition}
+
+The solution will be composed of two parts:
+\begin{itemize}
+    \item A steady-state solution $\CS(x)$ representing the long-term CO distribution.
+    \item A homogeneous solution $\CH(x,t)$ describing the transient behaviour towards the steady state.
+\end{itemize}
+
+\subsection{$\CS$ Solution}
+The diffusion equation:
+\begin{equation}
+    \label{eq:diffusion}
+    \frac{\partial}{\partial t}C(x,t) = D \frac{\partial^2}{\partial x^2}C(x,t)
+\end{equation}
+At a steady state, $\frac{\partial}{\partial t}C(x, t) = 0$, so equation~(\ref{eq:diffusion}) simplifies to:
+
+\begin{equation}
+    \label{eq:steady_state_ode}
+    0 = D\frac{\mathrm{d}^2\CS(x)}{\mathrm{d}x^2}
+\end{equation}
+Dividing through by $D$ and integrating both sides:
+
+\begin{equation}
+    \label{eq:first_integral}
+    A = \frac{\mathrm{d}\CS(x)}{\mathrm{d}x}
+\end{equation}
+where $A$ is a constant. Integrating once more:
+
+\begin{equation}
+    \label{eq:Cs_general}
+    \CS(x) = Ax + B
+\end{equation}
+From the boundary conditions stated in Section~\ref{sec:bcs}:
+
+\begin{equation}
+    \label{eq:bc1}
+    \CS(0) = 1
+\end{equation}
+\begin{equation}
+    \label{eq:bc2}
+    \CS(L) = 0
+\end{equation}
+Applying equation~(\ref{eq:bc1}) to equation~(\ref{eq:Cs_general}):
+
+\begin{equation}
+    \label{eq:B_value}
+    A(0) + B = 1 \implies B = 1
+\end{equation}
+Applying equation~(\ref{eq:bc2}) to equation~(\ref{eq:Cs_general}):
+
+\begin{equation}
+    \label{eq:A_value}
+    A(L) + 1 = 0 \implies A = -\frac{1}{L}
+\end{equation}
+Substituting equations~(\ref{eq:B_value}) and~(\ref{eq:A_value}) into equation~(\ref{eq:Cs_general}) gives the steady-state solution:
+
+\begin{equation}
+    \label{eq:Cs}
+    \CS(x) = 1 - \frac{x}{L}
+\end{equation}
+Figure~\ref{fig:Cs_sketch} displays a depiction of this solution.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/OneThree.jpg}
+    \caption{Sketch of the steady-state solution $\CS(x)$.}
+    \label{fig:Cs_sketch}
+\end{figure}
+
+\subsection{Initial Condition}
+Using superposition:
+\begin{equation}
+    \label{eq:superposition}
+    C(x,t) = \CH(x,t) + \CS(x)
+\end{equation}
+Rearranging equation~(\ref{eq:superposition}):
+\begin{equation}
+    \label{eq:Ch_def}
+    \CH(x,t) = C(x,t) - \CS(x)
+\end{equation}
+Evaluating at $t=0$ and applying the initial condition $C(x,0) = 0$:
+\begin{equation}
+    \label{eq:Ch_ic}
+    \CH(x,0) = 0 - \left(1 - \frac{x}{L}\right) = \frac{x}{L} - 1
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/OneFour.jpg}
+    \caption{Sketch of the modified initial condition $\CH(x,0)$.}
+    \label{fig:Ch_sketch}
+\end{figure}
+
+\subsection{Spatial and Temporal General Solutions}
+Applying separation of variables, $\CH(x,t) = F(x)G(t)$, yields two ODEs:
+\begin{equation}
+    \label{eq:spatial_ode}
+    F''(x) + p^2 F(x) = 0
+\end{equation}
+\begin{equation}
+    \label{eq:temporal_ode}
+    G'(t) + Dp^2 G(t) = 0
+\end{equation}
+The general spatial solution to equation~(\ref{eq:spatial_ode}) is:
+\begin{equation}
+    \label{eq:F_general}
+    F(x) = A_p\cos(px) + B_p\sin(px)
+\end{equation}
+Applying the homogeneous boundary condition $F(0) = 0$ to equation~(\ref{eq:F_general}):
+\begin{equation}
+    \label{eq:Ap_zero}
+    F(0) = A_p = 0
+\end{equation}
+so equation~(\ref{eq:F_general}) reduces to $F(x) = B_p\sin(px)$. Applying $F(L) = 0$:
+\begin{equation}
+    \label{eq:eigenvalue}
+    \sin(pL) = 0 \implies p = \frac{n\pi}{L}, \quad n = 1, 2, 3, \ldots
+\end{equation}
+giving the spatial eigenfunctions:
+\begin{equation}
+    \label{eq:F_solution}
+    F_n(x) = B_n\sin\!\left(\frac{n \pi x}{L}\right)
+\end{equation}
+The general temporal solution to equation~(\ref{eq:temporal_ode}) is:
+\begin{equation}
+    \label{eq:G_solution}
+    G_n(t) = e^{-Dp^2 t}
+\end{equation}
+Combining equations~(\ref{eq:F_solution}) and~(\ref{eq:G_solution}) and summing over all eigenmodes gives the general homogeneous solution:
+\begin{equation}
+    \label{eq:Ch_series}
+    \CH(x,t) = \sum_{n=1}^{\infty} B_{n}\sin\!\left(\frac{n \pi x}{L}\right)e^{-D \frac{n^2\pi^2}{L^2} t}
+\end{equation}
+
+\subsection{Fourier Coefficients}
+Evaluating equation~(\ref{eq:Ch_series}) at $t=0$ and matching with the modified initial condition from equation~(\ref{eq:Ch_ic}):
+\begin{equation}
+    \label{eq:fourier_match}
+    \sum_{n=1}^{\infty} B_{n}\sin\!\left(\frac{n \pi x}{L}\right) = \frac{x}{L}-1
+\end{equation}
+The Fourier sine coefficients are therefore:
+\begin{equation}
+    \label{eq:Bn_integral}
+    B_{n} = \frac{2}{L}\int^L_0 \left(\frac{x}{L}-1\right)\sin\!\left(\frac{n \pi x}{L}\right)\mathrm{d}x
+\end{equation}
+Applying integration by parts with $u = \frac{x}{L} - 1$ and $\mathrm{d}v = \sin\!\left(\frac{n \pi x}{L}\right)\mathrm{d}x$:
+\begin{equation}
+    \label{eq:ibp_parts}
+    \mathrm{d}u = \frac{1}{L}\,\mathrm{d}x, \qquad v = -\frac{L}{n \pi}\cos\!\left(\frac{n \pi x}{L}\right)
+\end{equation}
+\begin{equation}
+    \label{eq:Bn_ibp}
+    B_{n} = \frac{2}{L}\left(\left[-\frac{L}{n \pi}\cos\!\left(\frac{n \pi x}{L}\right)\left(\frac{x}{L}-1\right)\right]_0^L + \frac{1}{n \pi}\int_0^L\cos\!\left(\frac{n \pi x}{L}\right)\mathrm{d}x\right)
+\end{equation}
+Evaluating the boundary term and noting $\sin(n\pi) = 0$:
+\begin{equation}
+    \label{eq:Bn_eval}
+    B_{n} = \frac{2}{L}\left(0 - \left(-\frac{L}{n \pi}\right) + \frac{L}{n^2 \pi^2}\left(\sin{n \pi} - \sin{0}\right)\right)
+    = \frac{2}{L}\cdot\left(-\frac{L}{n \pi}\right) = -\frac{2}{n \pi}
+\end{equation}
+Now that we have $B_{n}$, the complete homogeneous solution from equation~(\ref{eq:Ch_series}) becomes:
+\begin{equation}
+    \label{eq:Ch_final}
+    \CH(x,t) = \sum_{n=1}^{\infty} -\frac{2}{n \pi}\sin\!\left(\frac{n \pi x}{L}\right)e^{-D \frac{n^2\pi^2}{L^2} t}
+\end{equation}
+
+\subsection{MATLAB}
+As the number of eigenfunctions summed in the Fourier Series rises, the accuracy of the approximation of the modified initial condition also increases. In Figure~\ref{fig:fourier_approx}, we see that when the number of Fourier terms is 1 the accuracy is very low, and it steadily rises when increased to ten terms, becoming highly accurate at 100 terms with the approximation converging almost immediately on the exact value. The code for this implementation can be located in the Appendix under 1.7.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/OneSeven.jpg}
+    \caption{Approximating the modified initial condition using Fourier series.}
+    \label{fig:fourier_approx}
+\end{figure}
+
+\subsection{Final Solution}
+The final solution $C(x, t)$ is given by combining equations~(\ref{eq:Cs}) and~(\ref{eq:Ch_final}) via equation~(\ref{eq:superposition}):
+\begin{equation}
+    \label{eq:final_general}
+    C(x,t) = 1 - \frac{x}{L} + \sum_{n=1}^{\infty} -\frac{2}{n \pi}\sin\!\left(\frac{n \pi x}{L}\right)e^{-D \frac{n^2\pi^2}{L^2} t}
+\end{equation}
+Substituting $L = \SI{2000}{m}$, the final solution is:
+\begin{equation}
+    \label{eq:final}
+    C(x,t) = 1 - \frac{x}{2000} + \sum_{n=1}^{\infty} -\frac{2}{n \pi}\sin\!\left(\frac{n \pi x}{2000}\right)e^{-D \frac{n^2\pi^2}{2000^2} t}
+\end{equation}
+
+\section{QUESTION 2: NUMERICAL SOLUTION}
+
+\subsection{Forward-Time Central-Space (FTCS) scheme}
+A Forward-Time Central-Space (FTCS) scheme is obtained by discretizing equation~(\ref{eq:diffusion}) using finite difference approximations. The forward finite difference approximation for the time derivative is:
+\begin{equation}
+    \label{eq:ftcs_time}
+    \left.C_{t}\right|_i^n \approx \frac{C_{i}^{n+1}-C_i^n}{\Delta t}
+\end{equation}
+The central difference approximations for the spatial derivative are:
+\begin{equation}
+    \label{eq:ftcs_space_half}
+    \left.C_{x}\right|_{i-\frac{1}{2}}^n \approx \frac{C_{i}^{n}-C_{i-1}^n}{\Delta x},
+    \qquad
+    \left.C_{x}\right|_{i+\frac{1}{2}}^n \approx \frac{C_{i+1}^{n}-C_{i}^n}{\Delta x}
+\end{equation}
+Combining the two expressions in equation~(\ref{eq:ftcs_space_half}):
+\begin{equation}
+    \label{eq:ftcs_space_second}
+    \left.C_{xx}\right|_i^n \approx \frac{\left.C_{x}\right|_{i+\frac{1}{2}}^n - \left.C_{x}\right|_{i-\frac{1}{2}}^n}{\Delta x}
+    = \frac{C_{i+1}^n - 2C_{i}^n + C_{i-1}^n}{\left(\Delta x\right)^2}
+\end{equation}
+Substituting equations~(\ref{eq:ftcs_time}) and~(\ref{eq:ftcs_space_second}) into equation~(\ref{eq:diffusion}) and solving for $C_i^{n+1}$:
+\begin{equation}
+    \label{eq:ftcs_scheme}
+    C_i^{n+1} = \sigma C_{i-1}^n + \left(1 - 2\sigma\right)C_{i}^n + \sigma C_{i+1}^n
+\end{equation}
+where the diffusion number $\sigma$ is defined as:
+\begin{equation}
+    \label{eq:sigma}
+    \sigma = \frac{D\,\Delta t}{\left(\Delta x\right)^2}
+\end{equation}
+
+\subsection{Explicit nature of the FTCS Scheme}
+The FTCS scheme given in equation~(\ref{eq:ftcs_scheme}) is referred to as \emph{explicit} because it computes future values of $C_{i}^{n+1}$ directly from the known values at the current time step $n$, without requiring the solution of a system of equations.
+
+\subsection{MATLAB Numerical Solution}
+Figure~\ref{fig:numerical_comparison} shows the overlay of numerical solutions with varying values of $n_x$ against the analytical solution from equation~(\ref{eq:final}). The graph illustrates that the accuracy of the numerical solutions increases as $n_x$ grows, producing closer alignment with the analytical answer.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/TwoThree.jpg}
+    \caption{Comparison of the analytical solution with numerical solutions for various $n_x$ values.}
+    \label{fig:numerical_comparison}
+\end{figure}
+
+\subsection{Verifying the Order of Accuracy of the numerical solution}
+The error norms and orders of accuracy are presented in Table~\ref{tab:accuracy}. The MATLAB code responsible for generating these results may be found in the Appendix under 2.4. Because the FTCS scheme is second-order accurate in space, we expect the order of accuracy values to converge towards 2 as $n_x$ increases. This is confirmed in Table~\ref{tab:accuracy}.
+
+\begin{table}[H]
+\centering
+\caption{Error norms and orders of accuracy of the numerical solution (Appendix~2.4).}
+\label{tab:accuracy}
+\begin{tabular}{
+    c
+    S[table-format=1.3e1]
+    S[table-format=1.3e-1]
+    S[table-format=1.3e-2]
+    S[table-format=-1.3]
+    S[table-format=-1.3]
+    S[table-format=-1.3]
+}
+\toprule
+{$N$} & {$L^1$} & {$L^2$} & {$L^{\infty}$} & {$\mathcal{O}(L^1)$} & {$\mathcal{O}(L^2)$} & {$\mathcal{O}(L^{\infty})$} \\
+\midrule
+$9$  & 3.018e0  & 2.012e-1 & 1.349e-2 & {---}   & {---}   & {---}   \\
+$17$ & 5.891e0  & 5.285e-1 & 4.871e-2 & -1.052  & -1.519  & -2.018  \\
+$33$ & 3.304e0  & 3.223e-1 & 3.875e-2 &  0.872  &  0.745  &  0.345  \\
+$65$ & 7.750e-1 & 7.409e-2 & 9.926e-3 &  2.139  &  2.169  &  2.009  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{CO mass fraction along the mine shaft}
+Figure~\ref{fig:co_time} below contains a plot showing the numerical solution at times 1, 6, 12, 18, and 24 hours. This plot shows how as time increases, the portion of the mine shaft with a higher concentration of CO increases in length. However, the CO mass fraction decreases from 1 at $x=0$ to 0 at various lengths of $x$ for each time period.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/TwoFive.jpg}
+    \caption{Numerical solution showing CO mass fraction along the mine shaft at different times.}
+    \label{fig:co_time}
+\end{figure}
+Additionally, the gradient decreases with longer time periods, signifying more gradual concentration gradients than at shorter time periods. This is because the diffusion process results in the spread of CO from areas of high concentration to areas of low concentration, so the concentration gradient flattens out over time as the CO makes its way up the mine shaft.
+
+\subsection{Miners reaching the surface safely}
+The miners start at $x = \SI{750}{m}$ and an alarm is located at $x = \SI{1000}{m}$. The alarm sounds when the CO mass fraction $C(x, t)$ reaches $0.001$. The miners at $\SI{750}{m}$ evacuate at a speed of $\SI{360}{m/hr}$ upon hearing the alarm. A miner will die if the CO mass fraction exceeds $0.02$, or if the CO mass fraction exceeds $0.001$ for more than \SI{12}{hr}.
+
+Using the MATLAB code in the Appendix (2.6), the time at which $C(750, t) = 0.001$ is found to be \SI{14.42}{hr} (equivalent to \SI{51900}{s}). The alarm sounds when $C(1000, t) = 0.001$, which occurs at \SI{25.63}{hr} (\SI{92280}{s}). Therefore, when the alarm sounds, the miners have already been exposed to a CO concentration exceeding $0.001$ for \SI{11.21}{hr} (\SI{40380}{s}). After the full twelve hours of exposure, the CO mass fraction at the miners' position is found to be $\num{9.9062e-4}$. Since this is below $0.001$ and the CO concentration never exceeds $0.02$, the miners survive and escape the mine.
+
+
+\section{QUESTION 3: NUMERICAL SOLUTION EXTENDED}
+
+\subsection{Source term in the numerical solution}
+MATLAB code implementing the source term $f(x,t) = -0.001\,e^{-0.01\, x^{1.5}}$ within the FTCS scheme from equation~(\ref{eq:ftcs_scheme}):
+\begin{lstlisting}[language=MATLAB]
+% Discretize the source term f(x,t) = -0.001e^(-0.01 x^(1.5))
+f = -0.001 * exp(-0.01 * x.^1.5);
+
+% Time-stepping loop
+for t = dt:dt:t_final
+    % Initialize temporary vector for the new time step
+    c_new = c_numerical;
+
+    % Loop over space
+    for i = 2:Nx - 1
+        % Apply FTCS scheme with source term
+        c_new(i) = c_numerical(i) + sigma * (c_numerical(i - 1) ...
+            - 2 * c_numerical(i) + c_numerical(i + 1)) + dt * f(i);
+    end
+\end{lstlisting}
+The impact of the source term on the CO mass fraction is most significant near $x = 0$, due to the exponential decrease of the source term with distance (as a consequence of $e^{-0.01 x^{1.5}}$). The impact diminishes as $x$ increases.
+
+\subsection{Ventilated and Unventilated Mineshaft}
+The plot in Figure~\ref{fig:ventilated} shows a direct correlation between ventilation and safety in the mineshaft. While both cases begin with a CO mass fraction of 1 at $x=0$, the CO mass fraction in the ventilated shaft drops almost instantly by approximately half, while the unventilated shaft maintains a smaller decline. Consequently, miners in the ventilated shaft are exposed to less CO over the time period, giving them a better chance of escaping. The MATLAB code to produce this plot can be found in the Appendix as 3.1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/ThreeOne.jpg}
+    \caption{CO mass fraction in ventilated and unventilated mineshaft at $t = \SI{26.5}{hr}$.}
+    \label{fig:ventilated}
+\end{figure}
+
+\clearpage
+
+\newpage
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+
+\subsection*{1.7 \quad Fourier Series Implementation}
+\lstinputlisting[language=MATLAB]{OneSevenSoln.m}
+
+\subsection*{2.3 \quad Comparison of Numerical and Analytical Solutions}
+\lstinputlisting[language=MATLAB]{TwoThreeSoln.m}
+
+\subsection*{2.4 \quad Error Norms and Order of Accuracy}
+\lstinputlisting[language=MATLAB]{TwoFourSoln.m}
+
+\subsection*{2.5 \quad CO Mass Fraction at Different Times}
+\lstinputlisting[language=MATLAB]{TwoFiveSoln.m}
+
+\subsection*{2.6 \quad Miner Survival Solver}
+\lstinputlisting[language=MATLAB]{TwoSixSoln.m}
+
+\subsection*{Numerical FTCS Scheme}
+\lstinputlisting[language=MATLAB]{NumericalFTCS.m}
+
+\subsection*{Analytical Solution Function}
+\lstinputlisting[language=MATLAB]{Analytical.m}
+
+\subsection*{Numerical FTCS for Distinct Time Periods}
+\lstinputlisting[language=MATLAB]{NumericalFTCS_time.m}
+
+\subsection*{3.1 \quad Ventilated and Unventilated Mineshaft Comparison}
+\lstinputlisting[language=MATLAB]{ThreeOne.m}
+
+\end{document}
