@@ -1,0 +1,540 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{fancyhdr}
+\usepackage{graphics}
+\usepackage{enumitem}
+\usepackage[margin=0.5cm]{caption}
+\usepackage{adjustbox}
+\usepackage{pgfplots}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\hypersetup{
+  colorlinks = true,
+  linkcolor = black,
+  anchorcolor = red,
+  citecolor = black,
+  urlcolor = blue
+}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=10cm]{figures/USYDLogo.png}
+	\end{figure}
+	\vspace{1.5cm}
+	\rule{\linewidth}{0.3 mm} \\[0.5 cm]
+	\textbf{\Huge \centering ENGG2112}\\
+        \vspace{0.4cm}
+        \textbf{\Huge \centering Final Project Report}\\
+        \vspace{0.4cm}
+        \textbf{\centering A Machine Learning Model for Estimating Market Expectations in Australian Housing}\\
+	    \vspace{0.4cm}
+	    \textbf{\large \centering Harry Lieshout : 530619370\\ Aaryan Diddee: 550708117\\ Neil Mehta : 550663067\\ Tristan Diakos: 550773643\\
+            }
+	\rule{\linewidth}{0.3 mm} \\[0.5 cm]
+	\vspace{0.2cm}
+	\vspace*{\fill}
+\end{titlepage}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small ENGG2112 Final Report}
+\fancyhead[R]{\small malwhere}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\pagenumbering{roman}
+
+\begin{abstract}
+Residential property pricing in Australia remains opaque to most consumers. Existing valuation tools are either paywalled, agency-affiliated, or constrained to median suburb-level summaries that fail to capture property-specific characteristics. This project develops a supervised machine learning solution that estimates a transparent "ballpark" market value for residential properties across multiple Australian capital cities, with first-home buyers and prospective purchasers as the primary intended users. A consolidated dataset of 23,068 verified residential sale records was compiled from Kaggle historical datasets (Melbourne and Sydney), a first-quarter 2026 scrape of realestate.com.au, and recent state registry data, augmented with external suburb-level market anchors from NSW, Victorian, and South Australian government sources. Four regression models were trained and compared iteratively: a linear regression baseline, a blended XGBoost and LightGBM ensemble, a dense neural network, and a refined blend of XGBoost, LightGBM, and Extra Trees. Performance was evaluated using MAE, RMSE, R², accuracy thresholds, and error distribution across price segments. The final ensemble achieved a median percentage error of 9.4\% and an R² of 0.7746, placing 70.6\% of predictions within ±15\% of the true sale price across the full \$500,000–\$5 million range and 74.4\% within ±15\% in the primary \$500,000–\$2 million target range. These results represent an evolution from the original proposal, which targeted a single XGBoost model at a 90\% accuracy threshold; iterative development led to an ensemble approach, an expanded multi-state dataset, and a revised 80\textbackslash{}\% development target. While this target was not achieved, the findings demonstrate that gradient-boosted tree ensembles can produce sufficiently accurate property estimates from publicly available data to serve as a credible, free reference tool for buyers. 
+\end{abstract}
+
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+% =======================================================================
+\section{Introduction}
+
+\subsection{Background}
+Australian housing is the largest single asset class held by households and a defining component of national wealth, with the total value of residential dwellings exceeding \$11 trillion as of 2024 \cite{abs2024housing}. Capital city dwelling values have grown materially over the past decade, with median values in Sydney and Melbourne increasing well beyond wage growth across the same period. Reserve Bank analysis identifies interest rates, credit availability, and supply constraints as primary drivers of this volatility \cite{kearns2022rba}, none of which are visible in the headline price a buyer encounters on a listing page. 
+\\
+\\
+For a typical buyer, the gap between a quoted asking price and a defensible market estimate is both consequential and difficult to close. Real estate agencies have a structural incentive to favour the vendor in any pricing guide, and independent valuations are typically gated behind subscription platforms or paid bank-ordered appraisals. The result is a market in which the participant with the greatest financial exposure, the buyer often holds the least information. 
+
+\subsection{Problem Statement}
+The core problem is information asymmetry. Vendors and agents have access to comparable sales evidence, automated valuation models, and market intelligence subscriptions; buyers generally do not. Where free tools exist, they typically default to suburb-level medians, which obscure the substantial price variance attributable to property-specific factors such as land size, dwelling type, and proximity to the CBD \cite{sirmans2005hedonic}. The primary intended users of this project are prospective home buyers, particularly first-home buyers who currently carry the greatest financial exposure yet have the least access to independent pricing evidence. A regression-based machine learning model trained on per-property sales data offers a route to surface property-specific price effects in a single, accessible estimate without requiring users to interpret comparable-sales spreadsheets themselves. 
+
+\subsection{Objectives}
+The project pursues four specific, measurable objectives. The primary aim is predictive precision: training a supervised regression model that produces predictions within ±15\% of the true sale price for at least 70\% of tested properties, a threshold that approximates the accuracy reported for commercial automated valuation models on comparable Australian data \cite{antipov2024avm}. Alongside this, the project seeks benchmarked performance by iteratively evaluating models of increasing complexity, beginning with a linear regression baseline, to identify the combination that maximises predictive accuracy on the consolidated dataset. A third objective is national data consultation, which involves compiling a unified, representative dataset of Australian residential property sales spanning multiple capital cities into a single consolidated dataset with sufficient coverage, consistency, and quality for reliable model training and evaluation. Finally, the project targets practical accessibility by delivering a functional model paired with a supporting interface that allows a general user to enter property attributes and receive a transparent market estimate with appropriate uncertainty framing.
+
+\subsection{Scope and Significance}
+The project is deliberately scoped to residential sales of houses, units, and townhouses in Australian capital cities, drawing on verified sale records spanning 2016–2018 from Kaggle-sourced Melbourne and Sydney datasets, combined with recent sale data from state land registries and a first-quarter 2026 scrape of realestate.com.au, subsequently refined to 23,068 residential transactions priced between \$500,000 and \$5 million across five states (VIC, NSW, QLD, SA, WA). Out-of-scope items include commercial property, rural and acreage transactions, and forward time-series forecasting of market direction. The model produces a point estimate conditioned on the property attributes it observes; it does not project future capital growth. 
+\\
+\\
+The significance of the work is twofold. From a consumer perspective, a transparent, free, property-specific estimate narrows the information gap that disadvantages first-home buyers in particular a cohort already facing the lowest affordability conditions in three decades \cite{abs2024housing}. From a methodological perspective, the project demonstrates the practical performance ceiling achievable from publicly available sales data alone, which is informative for future work proposing to augment such models with proprietary data sources such as school catchment overlays or transport accessibility indices.
+\\
+\\
+These objectives represent an evolution of the approach outlined in the original proposal, which aimed to use a single XGBoost model trained on a 28,228-row two-city dataset with a 90\% within$\pm$15\% accuracy threshold. The final implementation reflects iterative refinement to a blended ensemble approach, an expanded and filtered multi-state dataset, Python replacing MATLAB for data compilation, and a revised development target of 80\%\
+informed by empirical performance during development. Deviations from the original work plan are discussed in context throughout the report.
+
+% =======================================================================
+% =======================================================================
+\section{Data Description}
+
+\subsection{Data Sources}
+The training corpus was compiled from six sources selected to balance historical depth with current market relevance. The two primary sources are publicly available Kaggle datasets: the Melbourne Housing Dataset (\~21,000 transactions, 2016--2018, sourced from the Victorian Land Registry and Domain) and the Sydney House Prices Dataset, which adds geographic diversity beyond Melbourne. These provide verified historical coverage of key property attributes including price, suburb, dwelling type, bedrooms, bathrooms, land size and CBD distance. To address the age of these sources, a web-scraped dataset of Q1 2026 recorded sales across all major Australian capitals was collected from realestate.com.au, Australia's largest property platform, with 12.5 million monthly visits and over 100,000 concurrent listings  \cite{rea2024audience},  making it a credible single-source aggregator of recent sale evidence. Three additional state-level registry sources were incorporated as external market anchors: suburb-level median prices from nswpropertysalesdata.com (NSW), median and preliminary 2025 figures from land.vic.gov.au (VIC) and weighted quarterly suburb statistics from data.sa.gov.au across Q1--Q4 2025 (SA). These anchor variables were not used to replace original training prices but were added to help the model better reflect current local market conditions. The decision to combine sources was driven by the need to pair the Kaggle datasets' historical depth and feature richness with recent market evidence; without the newer sources, the model would embed pre-pandemic price relativities that no longer reflect current conditions. 
+
+
+\subsection{Data Characteristics}
+After consolidation and refinement, the final modelling dataset contains 23,068 rows and 85 columns. The increase in column count was due to feature engineering and the addition of external market-anchor variables. Key variables and their roles are summarised in Table~\ref{tab:variables}.
+
+\begin{table}[H]
+\centering
+\caption{Descriptive statistics for key numerical variables in the final refined dataset.}
+\label{tab:descriptive_stats}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+\textbf{Variable} & \textbf{Type} & \textbf{Mean} & \textbf{Median} & \textbf{IQR} & \textbf{Min} & \textbf{Max} \\
+\midrule
+Price & Numeric & 1,171,740.21 & 990,000.00 & 640,000.00 & 500,000.00 & 4,900,000.00 \\
+Postcode average price & Numeric & 1,131,170.61 & 1,065,000.00 & 448,979.31 & 436,826.53 & 4,888,888.00 \\
+Bedrooms & Numeric & 3.14 & 3.00 & 1.00 & 0.00 & 10.00 \\
+Bathrooms & Numeric & 1.66 & 2.00 & 1.00 & 0.00 & 8.00 \\
+Parking spaces & Numeric & 1.80 & 2.00 & 1.00 & 0.00 & 8.00 \\
+Capped land size & Numeric & 483.02 & 479.00 & 443.00 & 0.00 & 2,405.00 \\
+Log land size & Numeric & 5.66 & 6.17 & 1.11 & 0.00 & 7.79 \\
+Distance to CBD & Numeric & 12.35 & 10.50 & 8.20 & 0.00 & 78.56 \\
+Distance to beach & Numeric & 16.72 & 11.65 & 11.67 & 0.03 & 84.99 \\
+Cash rate at sale & Numeric & 2.22 & 1.50 & 2.35 & 1.50 & 4.10 \\
+Inflation rate at sale & Numeric & 1.89 & 1.90 & 0.60 & 1.00 & 2.50 \\
+Real interest rate & Numeric & 0.33 & 0.00 & 1.85 & -0.60 & 1.70 \\
+External market anchor & Numeric & 1,344,137.38 & 1,237,500.00 & 606,000.00 & 472,500.00 & 5,700,000.00 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The final refined dataset retained residential properties between \$500,000 and \$5 million, with a median sale price of \$990,000. This range removed extreme low-value sales while still allowing the model to learn from higher-value properties. Land size was capped and log-transformed because it is an important price driver but can contain extreme values that distort model training. External market-anchor variables were also included as an attempt to provide recent suburb-level context from NSW, Victorian and South Australian data.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/price_distribution_histogram.png}
+        \caption{Distribution of property sale prices.}
+        \label{fig:price_distribution}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/state_row_count_bar_chart.png}
+        \caption{Number of property records by state.}
+        \label{fig:state_counts}
+    \end{subfigure}
+    \caption{Overview of the final consolidated dataset characteristics.}
+    \label{fig:dataset_characteristics}
+\end{figure}
+
+As shown in Figure~\ref{fig:price_distribution}, the sale price distribution is heavily right-skewed, with most properties concentrated below \$2 million and significantly fewer records appearing in the upper \$2 million--\$5 million tier; this distribution directly motivates the decision to report model performance separately across the full range and the primary residential target bracket. Simultaneously, Figure~\ref{fig:state_counts} highlights a distinct geographic imbalance within the data, where Victoria contributes the vast majority of records (16,694 observations) compared to substantially lower counts across NSW, QLD, SA, and WA. While this imbalance stems from the extensive size of the original historical Melbourne dataset and was purposefully retained to maximize overall training volume, it represents a structural limitation as the final model may naturally lean toward Victorian market dynamics over underrepresented states.
+
+
+
+\subsection{Preprocessing and Feature Engineering}
+\label{sec:preprocessing}
+The preprocessing pipeline applied seven sequential operations. First, column names, units and sale dates were standardised across all sources, with dates converted to ISO-8601 format, before merging into a single consolidated dataset. Second, external market anchors were matched to the main dataset by suburb name and added as supplementary features; these included NSW suburb medians and counts, Victorian 2024/2025 suburb medians and South Australian Q1–Q4 2025 weighted suburb-level statistics. Third, rows missing the sale price target were dropped, remaining numerical missings were median-imputed during training, and a binary flag was added to distinguish missing land-size values from genuinely small parcels. Fourth, records were filtered to the \$500k–\$5m price range. Non-standard property categories (acreage, mixed farming, retirement living, unit blocks and warehouses) and records with physically unrealistic bedroom, bathroom or parking counts were removed, producing a dataset representative of standard residential properties. Fifth, land size was capped and log-transformed to reduce the influence of extreme outliers. Derived features were then constructed, including land size per bedroom, a very-large-land flag and interaction terms between distance-to-CBD, bedrooms and log land size, to help the model capture non-linear price effects. Sixth, low-cardinality variables such as state and property type were one-hot encoded, while the high-cardinality suburb variable was target-encoded by replacing each suburb with its mean training-set sale price, preserving location signal without expanding the feature space. Finally, the dataset was split 60/20/20 into training, validation and held-out test sets using a fixed random seed, with the validation set used for model selection and the test set reserved for final performance reporting.
+
+
+\subsection{Data Limitations}
+Furthermore, the dataset includes total land size but not internal floor area. Floor area is one of the strongest predictors of property value, and its absence represents a distinct data ceiling on model precision regardless of model complexity. To partially compensate for this limitation, a proxy feature combining bedroom, bathroom, and parking counts was engineered, though it remains an imperfect substitute. Future iterations could explore augmenting the data via computer vision techniques on scraped floor plans.
+% =======================================================================
+\section{Methodology}
+
+\subsection{Model Overview}
+The modeling task is formulated as a supervised regression where, given a set of property attributes, the model predicts a continuous sale price across an iterative progression from a simple linear baseline to highly flexible non-linear models. Linear regression was established as a starting baseline to provide an easily interpretable reference point for measuring subsequent accuracy gains. To evaluate alternative architectural paths, a dense neural network (DNN) with fully connected layers was introduced to capture potential non-linear relationships, while gradient-boosted tree architectures—specifically XGBoost and LightGBM—were deployed due to their proven capacity to model complex feature interactions (such as suburb, land size, and distance to the CBD) on structured tabular data \cite{chen2016xgboost}. After observing that these tree-based approaches significantly outperformed the linear and neural-network models, an ExtraTrees ensemble was integrated to reduce variance and improve stability across noisy observations by averaging randomized decision trees. Ultimately, the final modeling approach successfully blended ExtraTrees, XGBoost, and LightGBM together, as this combined ensemble proved uniquely suited to the dataset and produced the most reliable predictions.
+
+\subsection{Algorithm Design}
+For the linear baseline, ordinary least squares regression was fit on the engineered feature set, with one-hot encoded categoricals expanded into the design matrix. Multicollinearity was monitored via variance inflation factor; any feature with VIF $>$ 10 was flagged for removal in a secondary baseline.
+
+For the Dense Neural Network (DNN), the architecture consisted of three fully connected hidden layers containing 128, 64, and 32 neurons respectively, utilising ReLU activation functions. A dropout rate of 0.2 was applied after the first two layers to mitigate overfitting. The model was compiled using the Adam optimiser with a learning rate of 0.001 and trained to minimise Mean Squared Error (MSE) loss.
+
+For the Random Forest, 500 trees were grown with no maximum depth, minimum samples per leaf set to 5, and the standard bootstrap sampling. Feature importance was computed via mean decrease in impurity.
+
+For XGBoost, the gradient-boosted tree learner was used with squared error loss. The model was trained with a learning rate of 0.05, maximum tree depth of 6, 1000 boosting rounds with early stopping based on the validation RMSE, $L_2$ regularisation $\lambda = 1$, and column subsampling of 0.8. These starting values follow common recommendations for medium-sized tabular regression tasks \cite{chen2016xgboost} and were refined via the hyperparameter search described in Section~\ref{sec:hyperparam}.
+
+\subsection{Loss Function and Evaluation Metrics}
+The training objective is squared error, $\mathcal{L}(\hat{y}, y) = \frac{1}{n}\sum_{i=1}^{n}\left(\hat{y}_i - y_i\right)^2$, which penalises larger residuals more heavily and aligns with the gradient-boosted regression formulation in \cite{chen2016xgboost}. Final-model performance is reported using four complementary metrics to provide a comprehensive evaluation: Mean Absolute Error (MAE) measures the average dollar error per prediction for direct interpretability; Root Mean Squared Error (RMSE) disproportionately penalises larger errors to surface tail behaviour; and the Coefficient of Determination ($R^2$) captures the proportion of variance in price explained by the model. These metrics are reported in concert because no single metric captures both dollar-scale and percentage-scale error in a market with prices ranging across an order of magnitude.
+
+\subsection{Model Architecture}
+The XGBoost ensemble is fully described by its tree-level hyperparameters: maximum depth, minimum child weight, subsample, colsample-bytree, learning rate, and $L_1$/$L_2$ regularisation strengths. ExtraTrees is described by tree count, maximum depth, minimum samples per split/leaf, and the maximum number of features considered at each split. Final selected values are reported in Section 5.4.
+
+\subsection{Training Configuration}
+All models were trained on a 60\% training partition, with 20\% used as a validation set for early stopping and hyperparameter selection, and the remaining 20\% reserved as a held-out test set seen only after model finalisation. A fixed random seed (\texttt{42}) was used for all stochastic operations to ensure reproducibility. Training was performed in Python 3.11 using \texttt{scikit-learn} \cite{pedregosa2011sklearn} for the linear and Random Forest models and the \texttt{xgboost} Python package \cite{xgboost2023docs} for the XGBoost regressor.
+
+\subsection{Parameter and Hyperparameter Selection}
+\label{sec:hyperparam}
+
+The final model settings were selected through validation-set testing rather than relying on a single default model. After earlier trials showed that tree-based models performed best on the structured property dataset, the final ensemble was built from ExtraTrees, XGBoost and LightGBM. XGBoost was given the largest weighting because it produced the strongest individual results, while ExtraTrees and LightGBM were retained to improve stability and reduce reliance on one model.
+
+The final blend used weights of 0.20 for ExtraTrees, 0.75 for XGBoost and 0.05 for LightGBM. A global calibration factor of 0.982 was also applied to correct slight overprediction observed on the validation set. Segment-based calibration was then used to improve consistency across different predicted price bands. The final selected hyperparameters are provided in Appendix~\ref{tab:final_hyperparameters}.
+
+\subsection{Trade-off Analysis}
+Model selection in this project involves navigating three competing technical concerns. First, balancing bias versus variance required moving away from the high-bias, low-variance linear baseline toward more flexible tree ensembles like XGBoost, where hyperparameter randomized searches and validation-set early stopping were intentionally applied to secure a low-bias, controlled-variance regime. Second, a trade-off exists between performance and interpretability: while linear regression coefficients are directly interpretable, tree ensembles are opaque. SHAP value analysis is the standard remedy to this limitation and would be vital for any deployed version of this tool, particularly since building trust with the target stakeholder population (first-home buyers) depends on the model being explainable rather than merely accurate. Finally, the trade-off between compute and accuracy is negligible at this scale; although tree ensembles are more compute-intensive than linear regression, they remain trivially trainable on a standard laptop at 25,000 rows, meaning computational overhead is not a binding operational constraint.
+\\
+\\
+The implementation follows a standard scikit-learn pipeline architecture: data ingestion $\rightarrow$ preprocessing transformer $\rightarrow$ model estimator $\rightarrow$ evaluation. Encapsulating preprocessing in a \texttt{ColumnTransformer} object ensures the same transformations are applied to training and test data, preventing leakage. The full pipeline is serialisable via \texttt{joblib}, which supports the project's reproducibility goals and would support future deployment behind a lightweight web interface.
+
+The held-out test set was used only once, after final model selection 
+on the validation set, to produce the headline metrics reported in 
+Section~5 \cite{hastie2009esl}. Performance was additionally evaluated 
+per-state to assess whether the model predicts sale prices within 
+±15\% of the true value for at least 80\% of held-out properties 
+across different states.
+
+% =======================================================================
+
+% =======================================================================
+\section{Results}
+
+\subsection{Performance Metrics}
+
+Several regression models were tested, starting with a linear regression baseline and progressing toward tree-based ensemble models. Linear regression performed poorly, confirming that property features has a strong non-linear correlation. The dense neural network model improved on the baseline, but still remained below the target accuracy. XGBoost and LightGBM performed better on the tabular data, reaching 67.9\% within $\pm$15\%, but the final improvement came after refining the dataset and blending ExtraTrees, XGBoost and LightGBM with external market-anchor features.
+
+\begin{figure}[H]
+\centering
+
+\begin{minipage}[t]{0.60\textwidth}
+\centering
+\scriptsize
+\captionof{table}{Summary of model performance across the main modelling stages.}
+\label{tab:model_progression_summary}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{MAE} & \textbf{$R^2$} & \textbf{Within $\pm$15\%} \\
+\midrule
+Linear Regression & \$212,442 & -3.4300 & 57.03\% \\
+Dense Neural Network & \$177,876 & 0.5026 & 63.16\% \\
+XGBoost + LightGBM & \$155,627 & 0.7873 & 67.9\% \\
+Final Ensemble, \$500k--\$5m & \$163,866 & 0.7746 & 70.6\% \\
+Final Ensemble, \$500k--\$2m & \$120,203 & 0.7764 & 74.4\% \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.36\textwidth}
+\centering
+\scriptsize
+\captionof{table}{Final model accuracy within $\pm$15\% by price segment.}
+\label{tab:final_price_segment_results}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Segment} & \textbf{Within} & \textbf{Count} \\
+\midrule
+\$500k--\$800k & 81.36\% & 1363 \\
+\$800k--\$1.2m & 74.78\% & 1578 \\
+\$1.2m--\$2m & 66.43\% & 1284 \\
+\$2m--\$3m & 34.09\% & 308 \\
+\$3m--\$5m & 12.35\% & 81 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\end{figure}
+
+Tables~\ref{tab:model_progression_summary} and~\ref{tab:final_price_segment_results} show that the final ensemble was the first model to pass the 70\% within-$\pm$15\% benchmark, achieving 70.6\% across the full \$500,000--\$5 million range and 74.4\% in the main \$500,000--\$2 million target range. The final blend used ExtraTrees, XGBoost and LightGBM with weights of 0.20, 0.75 and 0.05 respectively, followed by a 0.982 calibration factor and price-segment calibration. Performance was strongest below \$1.2 million and weakened above \$2 million, where unobserved factors such as renovations, views, school catchments and street prestige have a larger influence on price.
+
+\section{Discussion}
+
+\subsection{Interpretation of Results}
+When interpreting all results, ensured to check what the most influential features to model training were in order to verify if our model made its decisions appropriately. For example we expected features such as distance to CBD, Median Postcode Price, Land Size and Property Type to be some of the key drivers to estimating property value. Hence this served as an indicator that some of our earlier
+models weren't behaving properly due to flawed Land Size values either being to large or missing overall, making the some of the predictions unstable as seen in the feature importance results in Appendix~\ref{fig:feature_importance}. We also focused on our $\pm$15\% benchmark with our results testing helping us to determine if each iteration of the model was actually improving its accuracy.
+
+\subsection{Model Performance Evaluation}
+
+The project partially met its objectives. The 80\% within $\pm$15\% target was not achieved, which is understandable given the limitations of the available public data. Property prices are influenced by many unobserved factors, including renovation quality, street appeal, school catchments, views, and local buyer competition. These features were not available in the dataset.
+
+However, the final refined ensemble achieved a 70.6\% within $\pm$15\% benchmark across the full \$500,000--\$5 million range and achieved 74.4\% within $\pm$15\% for the main \$500,000--\$2 million range. This indicates that the model is useful as a ballpark residential property estimator, particularly for standard buyer-facing properties. It should not be interpreted as a formal valuation tool, especially for high-end properties above \$2 million where the model's accuracy was much weaker.
+
+The final model also improved substantially over the earlier approaches. Compared with linear regression, it reduced the median percentage error and improved the within$\pm$15\% accuracy by more than 17 percentage points in the main target range. This supports the decision to use ensemble tree models and additional market-anchor data for the final estimator.
+\subsection{Comparison of Approaches}
+
+Our first approach with linear regression model made a clear indication that our dataset had significant non-linear relationships between features, hence we had to resort to models that handle it appropriately. Dense Neural Network was a model that was discovered during research, and hence served as a next-level benchmark to dealing with non-linearity. However it did not work effectively as we discovered neural networks aren't the best solution for tabular data.
+
+The initial XGBoost and LightGBM stack performed better than both earlier models because boosted decision trees can learn threshold-based interactions between features such as postcode average price, dwelling type, bedrooms, distance to CBD, and macroeconomic indicators. 
+
+Overall, the strongest result came from combining appropriate model choice with better data pre-processing. The final model was essentially a more targeted modelling pipeline. It removed unreliable and missing values, incorporated recent market sale data, prioritised the main residential price range, and blended multiple ensemble predictions. This produced the best balance between accuracy, coverage, and practical usefulness.
+
+
+\subsection{Limitations}
+The model inherits three material structural limitations from its data. First, the absence of key amenity features, such as proximity to public transport and school catchment information, prevents the model from capturing significant within-suburb price drivers well-documented in Australian property research \cite{sirmans2005hedonic}. Second, it lacks direct macroeconomic features like the cash rate, inflation, or credit conditions; while the model predicts reliably within the historical regime of its training data, it cannot adapt dynamically to sudden interest rate changes or credit tightening \cite{kearns2022rba}. Finally, the geographic and temporal coverage embeds structural biases: Melbourne is heavily overrepresented relative to other capital cities, and the 2016--Q1 2026 data range is strictly bounded to metropolitan residential properties, meaning predictions for acreage, rural, or commercial property lie entirely outside the valid distribution.
+
+\subsection{Trade-offs in Model Design}
+The decision to optimise for MAPE-style accuracy across the full price distribution rather than dollar-weighted error means the model will, by construction, perform relatively better on lower-priced properties (where small absolute errors dominate) and relatively worse on the upper tail. This is a deliberate trade-off: the intended user is a first-home buyer, and the model's value to that user comes from being accurate where they actually transact, not where institutional investors transact.
+
+\subsection{Stakeholder Analysis \& Social Implications}
+Beyond the academic context, the model has several plausible application paths that impact a broad web of stakeholders. Embedded as a free, transparent estimator on a property search platform, it directly addresses consumer information asymmetry for \textbf{first-home buyers}. However, \textbf{vendors and real estate agents} may view the tool as a threat to their pricing strategies, potentially leading to market friction if estimates significantly undercut agent-quoted asking prices. 
+
+Furthermore, \textbf{regulators and policymakers} must consider the broader social implications of such tools. While democratising property data aids housing affordability by preventing uninformed overpayment, the unchecked proliferation of unregulated Automated Valuation Models (AVMs) creates systemic risks if they begin to be heavily relied upon by \textbf{banks and mortgage brokers} for loan sizing. Open-source comparators are excellent for consumer sanity checks, but clear regulatory boundaries are required to separate estimated guides from formal, legal appraisals.
+
+
+\subsection{Ethical Considerations \& Algorithmic Bias}
+Ethically, the model's geographic imbalance (heavy over-representation of Victoria) introduces a tangible risk of algorithmic bias. Because the model relies heavily on Victorian market patterns, interstate users (e.g., in WA or SA) may receive  less accurate estimates, unintentionally disadvantaging buyers in those markets. Furthermore, the model lacks fairness controls regarding socioeconomic demographics; suburbs with higher variance in housing stock quality (often lower-income areas where unrenovated and heavily renovated properties share the same street) may experience higher error rates, meaning financially vulnerable buyers could be misled by overly smoothed estimates.
+
+\subsection{User-Facing Recommendations}
+To ensure safe and responsible deployment for the end-user, any interface wrapping this model must include the following explicit usage guidelines based on price segments:
+\begin{itemize}
+    \item \textbf{High Confidence (\$500k--\$1.2m):} Users can strongly trust the estimate as a primary negotiation benchmark, as historical testing shows high reliability in this bracket.
+    \item \textbf{Moderate Confidence (\$1.2m--\$2m):} The estimate should be treated as a secondary sanity check to be used alongside manual comparable sales research.
+    \item \textbf{Low Confidence ($>$ \$2m):} Users must be explicitly warned to treat the output with extreme skepticism, as unobserved qualitative factors (views, luxury finishes) dominate pricing in this tier.
+\end{itemize}
+
+% =======================================================================
+% =======================================================================
+\section{Conclusions}
+
+\subsection{Summary of Findings}
+
+The final model performed best as a ballpark estimator for standard residential properties rather than as a full-market valuation tool. It achieved 70.6\% of predictions within $\pm$15\% across the full \$500,000--\$5 million range, and improved to 74.4\% within $\pm$15\% in the main \$500,000--\$2 million target range, with a median percentage error of 9.4\% and an $R^2$ score of 0.7746. Its main strength is in the lower and middle residential market, where there are more consistent training examples and stronger feature support. Its main weakness is above \$2 million, where accuracy falls because high-value properties depend more on unobserved features such as renovations, views, school catchments, street prestige and interior quality. Overall, the model did not meet the original 80\% target, but achieved 70.6\% within $\pm$15\%, and is suitable as a transparent buyer-facing estimate, not a formal valuation.
+\subsection{Future Work}
+
+Future work should focus on improving data quality before adding more model complexity. The main priority is collecting more robust recent sales data from NSW, QLD, WA and SA to reduce the current Melbourne-heavy bias. The model would also benefit from features not available in the current dataset, especially internal floor area, school catchments, public transport access, local amenities and renovation quality. A future version should also report confidence categories by price range, since the model is much more reliable below \$2 million than above it.
+
+\newpage
+
+\begin{thebibliography}{99}
+
+\bibitem{abs2024housing}
+Australian Bureau of Statistics. (2024). \emph{Total Value of Dwellings, Australia}. ABS. \url{https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/total-value-dwellings/latest-release}
+
+\bibitem{kearns2022rba}
+Kearns, J. (2022, September 19). \emph{Interest Rates and the Property Market}. Reserve Bank of Australia. \url{https://www.rba.gov.au/speeches/2022/sp-so-2022-09-19.html}
+
+\bibitem{sirmans2005hedonic}
+Sirmans, G. S., Macpherson, D. A., \& Zietz, E. N. (2005). The composition of hedonic pricing models. \emph{Journal of Real Estate Literature}, 13(1), 3--43.
+
+\bibitem{antipov2024avm}
+Antipov, E., \& Pokryshevskaya, E. (2024). Automated land valuation models: 
+A comparative study of four machine learning and deep learning methods based on a comprehensive range of influential factors. \emph{Cities}. 
+ \url{https://www.sciencedirect.com/article/pii/S0264275124003299}
+
+\bibitem{chen2016xgboost}
+Chen, T., \& Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System. In \emph{Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining} (pp. 785--794).
+
+\bibitem{rea2024audience}
+REA Group. (n.d.). \emph{Understanding Our Audience}. realestate.com.au. Retrieved April 3, 2026, from \url{https://media.realestate.com.au/audience/}
+
+\bibitem{nswpropertysalesdata}
+NSW Property Sales Data. (2026). \emph{NSW property sales data}. Available: \url{https://nswpropertysalesdata.com/}. Accessed: May 2026.
+
+\bibitem{nswvaluergeneral}
+NSW Government. (2024). \emph{How to find property sales information}. NSW Government. Available: \url{https://www.nsw.gov.au/housing-and-construction/land-values-nsw/how-to-find-property-sales-information}. Accessed: May 2026.
+
+\bibitem{landvic2025}
+Department of Transport and Planning Victoria. (2025). \emph{Property sales statistics: House prices by suburb}. land.vic.gov.au. Available: \url{https://www.land.vic.gov.au/}. Accessed: May 2026.
+
+\bibitem{datasa2025}
+Government of South Australia. (2025). \emph{Metro median house sales}. data.sa.gov.au. Available: \url{https://data.sa.gov.au/data/dataset/metro-median-house-sales}. Accessed: May 2026.
+
+\bibitem{savaluergeneral2026}
+Office of the Valuer-General South Australia. (2026). \emph{Published data and statistics: Median house sales by quarter}. Available: \url{https://valuergeneral.sa.gov.au/News-and-Publications/publisheddataandstatistics}. Accessed: May 2026.
+
+\bibitem{micci2001targetencoding}
+Micci-Barreca, D. (2001). A preprocessing scheme for high-cardinality categorical attributes in classification and prediction problems. \emph{ACM SIGKDD Explorations Newsletter}, 3(1), 27--32.
+
+\bibitem{hastie2009esl}
+Hastie, T., Tibshirani, R., \& Friedman, J. (2009). \emph{The Elements of Statistical Learning} (2nd ed.). Springer.
+
+\bibitem{pedregosa2011sklearn}
+Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. \emph{Journal of Machine Learning Research}, 12, 2825--2830.
+
+\bibitem{xgboost2023docs}
+XGBoost Developers. (n.d.). \emph{Using the Scikit-Learn Estimator Interface}. XGBoost Documentation. Retrieved April 6, 2026, from \url{https://xgboost.readthedocs.io/en/latest/python/sklearn_estimator.html}
+
+\end{thebibliography}
+
+% =======================================================================
+\appendix
+
+\section{Appendix}
+Link to Code files and UI and dataset:
+\\
+\\
+\href{https://drive.google.com/drive/folders/1ir-tRMOO--bgOdqrRpwGumpIqJxxUBvS?usp=sharing}{https://drive.google.com/drive/folders/1ir-tRMOO--bgOdqrRpwGumpIqJxxUBvS?usp=sharing}
+\\
+\\
+All experiments were run in Python 3.11 on standard consumer hardware. Key libraries and their versions are listed in Table~\ref{tab:envstack}.
+
+\begin{table}[H]
+\centering
+\caption{Computational environment.}
+\label{tab:envstack}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Component} & \textbf{Version} \\
+\midrule
+Python & 3.11 \\
+pandas & 2.x \\
+NumPy & 1.26.x \\
+scikit-learn & 1.4.x \\
+xgboost & 2.0.x \\
+matplotlib & 3.8.x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Key variables in the consolidated dataset.}
+\label{tab:variables}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Variable} & \textbf{Type} & \textbf{Role} & \textbf{Notes} \\
+\midrule
+\texttt{price} & Numeric & Target & Sale price in AUD \\
+\texttt{suburb} & Categorical & Feature & High cardinality, target-encoded \\
+\texttt{postcode} & Categorical & Feature & Used through postcode average price \\
+\texttt{state} & Categorical & Feature & One-hot encoded \\
+\texttt{property\_type} & Categorical & Feature & One-hot encoded house, unit, townhouse, etc. \\
+\texttt{bedrooms} & Numeric & Feature & Integer count \\
+\texttt{bathrooms} & Numeric & Feature & Integer count \\
+\texttt{parking} & Numeric & Feature & Integer count \\
+\texttt{landsize} & Numeric & Feature & m\textsuperscript{2}; capped and log-transformed \\
+\texttt{distance\_cbd} & Numeric & Feature & km from city centre \\
+\texttt{distance\_beach} & Numeric & Feature & km from nearest beach \\
+\texttt{sale\_date} & Datetime & Feature & Decomposed to year/month/quarter \\
+\texttt{cash\_rate} & Numeric & Feature & Cash rate at time of sale \\
+\texttt{inflation\_rate} & Numeric & Feature & Inflation rate at time of sale \\
+\texttt{external\_market\_anchor} & Numeric & Feature & Recent suburb-level NSW/VIC/SA market reference \\
+\texttt{anchor\_vs\_postcodeavg} & Numeric & Feature & Ratio between external anchor and postcode average \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/price_segment_count_bar_chart.png}
+\caption{Number of property records by price segment in the final refined dataset.}
+\label{fig:price_segment_counts}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/final_model_feature_importance_chart.png}
+\caption{Top 20 feature importances from the ExtraTrees component of the final ensemble.}
+\label{fig:feature_importance}
+\end{figure}
+
+\section*{Appendix B: Final Hyperparameter Configurations}
+
+\begin{table}[H]
+\centering
+\caption{Final ensemble model hyperparameters and configuration.}
+\label{tab:final_hyperparameters}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Model / Stage} & \textbf{Parameter} & \textbf{Value Used} \\
+\midrule
+\textbf{Data preparation} 
+& Train / validation / test split & 60\% / 20\% / 20\% \\
+& Random seed & 42 \\
+& Target transform & \texttt{log1p(Price)} \\
+& Missing numerical values & Median imputation \\
+\midrule
+\textbf{ExtraTreesRegressor} 
+& Number of trees & 700 \\
+& Max features & 0.90 \\
+& Minimum samples per leaf & 1 \\
+& Random seed & 42 \\
+& Parallel jobs & \texttt{-1} \\
+\midrule
+\textbf{XGBoost Regressor} 
+& Objective & \texttt{reg:absoluteerror} \\
+& Number of estimators & 5000 \\
+& Learning rate & 0.02 \\
+& Maximum depth & 6 \\
+& Minimum child weight & 8 \\
+& Subsample & 0.85 \\
+& Column sample by tree & 0.85 \\
+& $L_2$ regularisation & 2.0 \\
+& $L_1$ regularisation & 0.05 \\
+& Tree method & \texttt{hist} \\
+& Early stopping rounds & 150 \\
+& Evaluation metric & MAE \\
+& Random seed & 42 \\
+\midrule
+\textbf{LightGBM Regressor} 
+& Objective & MAE \\
+& Number of estimators & 5000 \\
+& Learning rate & 0.02 \\
+& Maximum depth & 8 \\
+& Number of leaves & 80 \\
+& Minimum child samples & 12 \\
+& Subsample & 0.85 \\
+& Column sample by tree & 0.85 \\
+& $L_2$ regularisation & 2.0 \\
+& $L_1$ regularisation & 0.05 \\
+& Early stopping rounds & 150 \\
+& Random seed & 42 \\
+\midrule
+\textbf{Final blend} 
+& ExtraTrees weight & 0.20 \\
+& XGBoost weight & 0.75 \\
+& LightGBM weight & 0.05 \\
+& Global calibration factor & 0.982 \\
+& Segment calibration & Enabled \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+\section*{Appendix C: User Interface Design}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{WhatsApp Image 2026-05-31 at 17.02.59.jpeg}
+
+\end{figure}
+
+\section{Generative AI Usage Log}
+We acknowledge the use of ChatGPT (OpenAI, \url{https://chat.openai.com/}) and Claude (Anthropic, \url{https://claude.ai/}) to proofread and edit sections of this report. All written work and ideas are original; AI tools were used to improve clarity, grammar, vocabulary, and structure. We verified that all edits preserved the intended meaning and information.
+
+\end{document}
