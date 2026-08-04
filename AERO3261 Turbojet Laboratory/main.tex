@@ -1,0 +1,192 @@
+\documentclass[12pt]{article}
+
+% ---------------- PACKAGES ----------------
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{siunitx}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    language=Matlab,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false
+}
+\geometry{margin=1in}
+
+% ---------------- TITLE ----------------
+\title{AERO3261 Turbojet Laboratory Report \\ SR30 Turbojet}
+\author{SID: 530619370}
+\date{3/18/2026	4:17:12 PM}
+
+\begin{document}
+
+\maketitle
+
+\section{Results}
+\begin{table}[H]
+\centering
+\caption{Measured Total Temperatures and Pressures at Each Station}
+\begin{tabular}{ccccccccc}
+\toprule
+& \multicolumn{4}{c}{Temperature (K)} & \multicolumn{4}{c}{Pressure (kPa)} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+RPM & $T_{t1}$ & $T_{t2}$ & $T_{t3}$ & $T_{t4}$ & $P_{t1}$ & $P_{t2}$ & $P_{t3}$ & $P_{t4}$ \\
+\midrule
+64,600 & 294.1 & 383.2 & 884.3 & 699.5 & 107.1 & 222.1 & 219.3 & 111.7 \\
+71,000 & 294.5 & 407.4 & 857.7 & 724.4 & 108.3 & 255.9 & 252.4 & 115.2 \\
+74,700 & 294.8 & 423.3 & 854.0 & 734.0 & 109.1 & 278.8 & 275.0 & 117.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Plotted data}
+\subsection{Temperatures}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.46\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_temp_12.png}
+\caption{Variation of compressor inlet and compressor exit total temperatures, $T_{t1}$ and $T_{t2}$, with RPM.}
+\label{fig:temp12}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.46\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_temp_34.png}
+\caption{Variation of turbine inlet and turbine exit total temperatures, $T_{t3}$ and $T_{t4}$, with RPM.}
+\label{fig:temp34}
+\end{subfigure}
+\caption{Variation of total temperatures with engine RPM.}
+\label{fig:temperature}
+\end{figure}
+
+\subsection{Pressures}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_press_14.png}
+\caption{Variation of low-level total pressures, $P_{t1}$ and $P_{t4}$, with RPM.}
+\label{fig:press14}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_press_23.png}
+\caption{Variation of high-level total pressures, $P_{t2}$ and $P_{t3}$, with RPM.}
+\label{fig:press23}
+\end{subfigure}
+\caption{Variation of total pressures with engine RPM.}
+\label{fig:pressure}
+\end{figure}
+
+\subsection{Efficiencies and Jet Velocity}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_efficiency.png}
+\caption{Variation of $\eta_c$, $\eta_t$, and $\eta_{cc}$ with RPM.}
+\label{fig:efficiency}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_V9.png}
+\caption{Variation of jet velocity, $V_9$, with RPM.}
+\label{fig:v9}
+\end{subfigure}
+\caption{Variation of efficiencies and jet velocity with engine RPM.}
+\label{fig:eff_v9}
+\end{figure}
+The compressor efficiency decreases slightly with increasing RPM, from approximately 0.77 to 0.70, while the turbine efficiency decreases from a non-physical value at low RPM (1.36) to more realistic values at higher throttle settings (0.88 and 0.74), as shown in Figure \ref{fig:efficiency}. The combustion chamber efficiency also decreases from 0.87 to 0.74. Aside from the low-RPM turbine value, these results lie within the expected range of 0.7–0.9. The non-physical turbine efficiency ($\eta_t > 1$) is attributed to measurement error, particularly due to small temperature differences at low RPM and thermocouple uncertainty, which significantly affect the calculation. As RPM increases, the flow becomes more stable and temperature measurements become more reliable, resulting in physically consistent efficiency values. The slight reduction in efficiency at higher RPM is likely due to increased aerodynamic and thermal losses within the components.
+
+\subsection{Measured Thrust and Delta Thrust}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_thrust.png}
+\caption{Comparison of $T_m$ and $T_t$ as a function of RPM.}
+\label{fig:thrust}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_deltaT.png}
+\caption{Percentage difference between $T_m$ and $T_t$ as a function of RPM.}
+\label{fig:delta}
+\end{subfigure}
+\caption{Variation of $T_m$, $T_t$, and relative thrust difference ($ \Delta T $) with engine RPM.}
+\label{fig:thrust_delta}
+\end{figure}
+The theoretical thrust significantly overpredicts the measured thrust, with discrepancies ranging from approximately 75\% to over 100\%, as shown in Figure \ref{fig:delta}. This overprediction arises from the simplifying assumptions used in the theoretical model, including isentropic nozzle expansion, negligible pressure losses, and perfect expansion to ambient pressure. In practice, viscous losses, flow separation, and incomplete expansion reduce the actual thrust produced. Additionally, uncertainties in estimating the mass flow rate at the nozzle exit contribute to the discrepancy. These effects are amplified in small-scale engines such as the SR30, where relative losses are higher and the flow is less ideal.
+
+\subsection{TSFC and Specific Thrust}
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_TSFC.png}
+\caption{Variation of thrust specific fuel consumption (TSFC) with RPM.}
+\label{fig:tsfc}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_Fs.png}
+\caption{Variation of specific thrust, $F_s$, with RPM.}
+\label{fig:fs}
+\end{subfigure}
+\caption{Variation of performance parameters with engine RPM.}
+\label{fig:tsfc_fs}
+\end{figure}
+The thrust specific fuel consumption decreases with increasing RPM, from approximately 5.67 to 4.84 kg/hr/daN, as shown in Figure \ref{fig:tsfc}. This indicates improved fuel efficiency at higher throttle settings, as more thrust is generated per unit of fuel. However, these values are significantly higher than those of large-scale jet engines, which typically operate in the range of 1–2 kg/hr/daN. This difference is primarily due to the SR30’s lower pressure ratio, reduced component efficiencies, higher relative heat losses, and less efficient combustion and expansion processes. These factors limit the engine’s ability to convert fuel energy into useful thrust.
+\\
+The specific thrust increases with RPM, rising from approximately 103 to 124 N/(kg/s), as shown in Figure \ref{fig:fs}. This increase is consistent with the rise in pressure ratio and turbine work at higher throttle settings, which increases the available energy for expansion in the nozzle and therefore the jet velocity. Compared to large engines, the specific thrust values are lower due to the SR30’s limited pressure ratio and reduced thermodynamic efficiency. Additional losses in the compressor, turbine, and nozzle further limit the achievable performance.
+\subsection{FAR and Mass Flow Rate}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_FAR.png}
+\caption{Variation of fuel-air ratio (FAR) with RPM.}
+\label{fig:far}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\linewidth]{figures/fig_mdot_air.png}
+\caption{Variation of air mass flow rate, $\dot{m}_{air}$, with RPM.}
+\label{fig:mdotair}
+\end{subfigure}
+\caption{Variation of fuel-air ratio and air mass flow rate with engine RPM.}
+\label{fig:far_mdot}
+\end{figure}
+The fuel–air ratio remains approximately constant across all throttle settings, varying between 0.0158 and 0.0167, as shown in Figure \ref{fig:far}. This behaviour is consistent with typical turbojet operation, where the FAR is maintained within a narrow range to ensure stable combustion. As RPM increases, both the fuel flow rate and air mass flow rate increase proportionally, resulting in only minor variation in FAR. The small fluctuations observed are likely due to uncertainty in the estimation of air mass flow rate from nozzle calculations, as well as measurement error in fuel flow.
+
+\section{Discussion}
+Overall, increasing the throttle results in higher pressure ratios, jet velocities, and thrust, as shown in Figures \ref{fig:pressure}, \ref{fig:v9}, and \ref{fig:thrust}. At the same time, TSFC decreases with RPM (Figure \ref{fig:tsfc}), indicating improved fuel efficiency at higher operating conditions. However, component efficiencies generally decrease slightly due to increased aerodynamic and thermal losses at higher flow rates. The discrepancy between theoretical and measured thrust, highlighted in Figure \ref{fig:delta}, demonstrates the limitations of the ideal assumptions used in the model, particularly the neglect of losses and the assumption of isentropic flow. Compared to large-scale engines, the SR30 exhibits lower efficiencies and higher TSFC due to scale effects, including lower Reynolds numbers, higher relative heat losses, and less efficient combustion. These factors collectively explain both the observed trends with RPM and the deviation from ideal performance.Relative to large-scale engines, the SR30 exhibits lower efficiencies and higher TSFC due to scale effects, including lower Reynolds numbers and increased relative losses. As RPM increases, the results show a clear rise in pressure ratio, jet velocity, and thrust, consistent with the trends observed in Figures \ref{fig:pressure}, \ref{fig:v9}, and \ref{fig:thrust}. Meanwhile, TSFC decreases with RPM (Figure \ref{fig:tsfc}), indicating improved fuel efficiency at higher throttle, although still significantly higher than that of large engines. The discrepancy between theoretical and measured thrust, highlighted in Figure \ref{fig:delta}, arises primarily from ideal modelling assumptions such as isentropic flow and neglect of losses, in addition to experimental uncertainties in temperature and pressure measurements. These effects are amplified in small-scale engines, where component inefficiencies and measurement sensitivity have a greater impact on overall performance.
+\newpage
+\appendix
+\section{Appendix}
+\subsection{Addition table}
+\begin{table}[H]
+\centering
+\caption{Calculated Performance Parameters}
+\begin{tabular}{ccccc}
+\toprule
+RPM & $T_m$ (N) & $\dot{m_f}$ (kg/s) & TSFC (kg/hr/daN) & FAR \\
+\midrule
+64,600 & 23.4 & 0.0037 & 5.67 & 0.0162 \\
+71,000 & 27.4 & 0.0042 & 5.51 & 0.0158 \\
+74,700 & 35.2 & 0.0047 & 4.84 & 0.0167 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{MATLAB Code}
+\lstinputlisting[caption={MATLAB code for SR30 performance analysis}, label={lst:matlab}]{gasturbinecalc.m}
+\end{document}
